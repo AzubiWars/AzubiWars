@@ -34,8 +34,6 @@ export default function NavBar() {
   const rang = getRang(xp);
 
   const navItems = [
-    { href: "/play", label: "⚡ Battlen" },
-    { href: "/challenges", label: "📋 Community" },
     { href: "/leaderboard", label: "🏆 Rangliste" },
   ];
 

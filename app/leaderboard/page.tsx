@@ -20,16 +20,22 @@ export default function LeaderboardPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/players")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (data.players) {
-          setPlayers(data.players);
+    // Erst Health-Check
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((health) => {
+        if (health.checks?.Firestore?.startsWith("❌")) {
+          setError(`Firestore nicht erreichbar: ${health.checks.Firestore}`);
+          setLoading(false);
+          return;
         }
-        setLoading(false);
+        // Firestore okay → Leaderboard laden
+        return fetch("/api/players")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.players) setPlayers(data.players);
+            setLoading(false);
+          });
       })
       .catch((err) => {
         setError(err.message);
@@ -57,8 +63,17 @@ export default function LeaderboardPage() {
       </div>
 
       {error && (
-        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-center text-sm text-red-400">
-          Rangliste temporär nicht verfügbar · {error}
+        <div className="card border-red-500/20 text-center space-y-3">
+          <div className="text-4xl">🔌</div>
+          <p className="text-red-400 text-sm font-semibold">Firestore-Datenbank nicht erreichbar</p>
+          <p className="text-gray-500 text-xs">{error}</p>
+          <div className="text-left text-xs text-gray-400 bg-white/[0.03] rounded-lg p-3 space-y-1">
+            <p className="font-medium text-gray-300">So behebst du das:</p>
+            <p>1. Firebase Console → Firestore Database</p>
+            <p>2. „Datenbank erstellen" (Native Mode)</p>
+            <p>3. Standort: eur3, Testmodus</p>
+            <p>4. Deploy erneut auslösen</p>
+          </div>
         </div>
       )}
 
@@ -66,8 +81,8 @@ export default function LeaderboardPage() {
         <div className="card text-center py-12 border-dashed">
           <div className="text-4xl mb-3 opacity-50">👻</div>
           <p className="text-gray-400 text-sm">Noch keine Spieler auf der Rangliste.</p>
-          <p className="text-gray-500 text-xs mt-1">Sei der Erste — starte eine Runde!</p>
-          <a href="/" className="btn-primary mt-4 inline-block text-sm">⚡ Battle starten</a>
+          <p className="text-gray-500 text-xs mt-1">Spiele eine Runde, um dich einzutragen!</p>
+          <a href="/play" className="btn-primary mt-4 inline-block text-sm">⚡ Battle starten</a>
         </div>
       )}
 
@@ -148,9 +163,6 @@ export default function LeaderboardPage() {
         <a href="/challenges" className="btn-secondary text-sm">📋 Community</a>
       </div>
 
-      <p className="text-center text-[11px] text-gray-600">
-        Die Rangliste wird aus Firestore geladen. Aktualisiert nach jeder Runde.
-      </p>
     </div>
   );
 }
