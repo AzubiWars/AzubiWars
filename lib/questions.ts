@@ -1,11 +1,12 @@
 import { getDb } from "./firestore";
 import type { QuestionRecord } from "./anthropic";
+import type { Query } from "firebase-admin/firestore";
 
 const COLLECTION = "questions";
 
 export async function getQuestions(limit: number, kategorie?: string): Promise<QuestionRecord[]> {
   const db = getDb();
-  let query = db.collection(COLLECTION);
+  let query: Query = db.collection(COLLECTION);
 
   if (kategorie) {
     query = query.where("kategorie", "==", kategorie);
