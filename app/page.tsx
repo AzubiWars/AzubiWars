@@ -33,7 +33,15 @@ export default function LandingPage() {
     <div className="flex flex-col items-center justify-center py-8 sm:py-16 px-2">
       {/* Hero */}
       <div className="text-center animate-slide-up">
-        <div className="mb-4 text-6xl sm:text-7xl">⚔️</div>
+        <div className="mb-4 flex justify-center">
+          <svg viewBox="0 0 200 200" className="h-24 w-24 sm:h-28 sm:w-28" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="100,8 180,54 180,146 100,192 20,146 20,54" fill="#D6462A"/>
+            <polygon points="100,22 168,61 168,139 100,178 32,139 32,61" fill="#17181C"/>
+            <g transform="translate(100,100) rotate(-45)"><polygon points="0,-66 11,-46 11,58 -11,58 -11,-46" fill="#D6462A"/></g>
+            <g transform="translate(100,100) rotate(45)"><polygon points="0,-66 5,-46 5,40 -5,40 -5,-46" fill="#D6462A"/><rect x="-18" y="40" width="36" height="8" fill="#D6462A"/></g>
+            <polygon points="100,85 115,100 100,115 85,100" fill="#17181C"/>
+          </svg>
+        </div>
         <h1 className="mb-3 text-4xl sm:text-5xl font-extrabold tracking-tight">
           <span className="bg-gradient-to-r from-brand-600 via-brand-700 to-brand-900 bg-clip-text text-transparent">
             Azubi-Wars
