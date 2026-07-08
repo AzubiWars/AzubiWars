@@ -62,10 +62,39 @@ function getStorageNumber(key: string, fallback = 0): number {
 export default function PlayPage() {
   const router = useRouter();
 
-  // Fragen-Runde (respektiert gewählte Schwierigkeit)
+  const [allQuestions, setAllQuestions] = useState(SAMPLE_QUESTIONS);
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
+
+  // Fragen-Runde (respektiert gewählte Schwierigkeit, inkl. Community-Fragen)
   const questions = useMemo(() => {
     const diff = typeof window !== "undefined" ? localStorage.getItem("difficulty") ?? "gemischt" : "gemischt";
-    return buildRound(SAMPLE_QUESTIONS, ROUND_SIZE, diff);
+    return buildRound(allQuestions, ROUND_SIZE, diff);
+  }, [allQuestions]);
+
+  // Community-Fragen vom Server laden und mit lokalen mischen
+  useEffect(() => {
+    fetch("/api/questions?limit=100")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.questions && data.questions.length > 0) {
+          // Firestore-Fragen mit Sample-Fragen mergen
+          const firestoreQs = data.questions.map((q: Record<string, unknown>) => ({
+            ...q,
+            id: q.id as string,
+            frage: q.frage as string,
+            optionen: q.optionen as [string, string, string, string],
+            korrekterIndex: q.korrekterIndex as 0 | 1 | 2 | 3,
+            erklaerung: q.erklaerung as string,
+            kategorie: q.kategorie as string,
+            schwierigkeit: q.schwierigkeit as "leicht" | "mittel" | "schwer",
+            punkte: q.punkte as number,
+            authorName: q.authorName as string | undefined,
+          })) as SampleQuestion[];
+          setAllQuestions([...firestoreQs, ...SAMPLE_QUESTIONS]);
+        }
+        setLoadingQuestions(false);
+      })
+      .catch(() => setLoadingQuestions(false));
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -250,6 +279,11 @@ export default function PlayPage() {
           >
             {currentQuestion.schwierigkeit} · {currentQuestion.punkte} XP
           </span>
+          {currentQuestion.authorName && (
+            <span className="rounded-lg bg-[#D6462A]/10 px-2 py-0.5 text-xs font-medium text-[#D6462A]/70">
+              von {currentQuestion.authorName}
+            </span>
+          )}
           {hintUsed && (
             <span className="rounded-lg bg-purple-500/20 px-2 py-0.5 text-xs font-semibold text-purple-400">
               💡 Tipp genutzt

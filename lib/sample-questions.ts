@@ -7,6 +7,7 @@ export interface SampleQuestion {
   korrekterIndex: 0 | 1 | 2 | 3;
   erklaerung: string;
   punkte: number;
+  authorName?: string;
 }
 
 export const SAMPLE_QUESTIONS: SampleQuestion[] = [
