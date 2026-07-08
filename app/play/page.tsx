@@ -76,6 +76,20 @@ export default function PlayPage() {
       sessionStorage.setItem("totalAnswered", String(newTotalAnswered));
       sessionStorage.setItem("bestStreak", String(Math.max(prevBestStreak, streak)));
 
+      // Sync mit Firestore (falls verfügbar)
+      const playerId = sessionStorage.getItem("playerId");
+      if (playerId) {
+        fetch("/api/players", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            playerId,
+            xpGained: roundXp,
+            wasCorrect: roundCorrect > 0,
+          }),
+        }).catch(() => { /* Firestore nicht verfügbar, lokal weitermachen */ });
+      }
+
       sessionStorage.setItem("roundResults", JSON.stringify({ roundXp, roundCorrect, streak, total: questions.length }));
       sessionStorage.setItem("roundTotalXp", String(roundXp));
       sessionStorage.setItem("streak", String(streak));

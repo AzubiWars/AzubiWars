@@ -7,8 +7,9 @@ export default function LandingPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const trimmed = nickname.trim();
     if (trimmed.length < 2) {
       setError("Bitte gib einen Nickname mit mindestens 2 Zeichen ein.");
@@ -19,12 +20,29 @@ export default function LandingPage() {
       return;
     }
 
-    sessionStorage.setItem("playerId", crypto.randomUUID());
+    setLoading(true);
+    setError("");
+
+    const playerId = crypto.randomUUID();
+
+    // Immer lokal speichern (Fallback)
+    sessionStorage.setItem("playerId", playerId);
     sessionStorage.setItem("nickname", trimmed);
     sessionStorage.setItem("totalXp", "0");
     sessionStorage.setItem("totalCorrect", "0");
     sessionStorage.setItem("totalAnswered", "0");
     sessionStorage.setItem("bestStreak", "0");
+
+    // Versuche, Spieler via API in Firestore anzulegen (für Leaderboard)
+    try {
+      await fetch("/api/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname: trimmed, playerId }),
+      });
+    } catch {
+      // API nicht verfügbar → nur lokaler Spielstand (funktioniert trotzdem)
+    }
 
     router.push("/play");
   };
@@ -60,7 +78,7 @@ export default function LandingPage() {
       <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
         {[
           { icon: "🎯", title: "6 Kategorien", desc: "IHK-Lernfelder" },
-          { icon: "📚", title: "15+ Fragen", desc: "3 Schwierigkeiten" },
+          { icon: "📚", title: "35 Fragen", desc: "3 Schwierigkeiten" },
           { icon: "🏆", title: "8 Ränge", desc: "Vom Neuling zum Ausbilder" },
         ].map((f) => (
           <div key={f.title} className="card text-center py-3 px-2">
@@ -95,8 +113,8 @@ export default function LandingPage() {
             {error}
           </p>
         )}
-        <button onClick={handleStart} className="btn-primary w-full text-lg">
-          🚀 Los geht&apos;s!
+        <button onClick={handleStart} disabled={loading} className="btn-primary w-full text-lg">
+          {loading ? "Starte…" : "🚀 Los geht's!"}
         </button>
         <p className="mt-3 text-center text-xs text-gray-400">
           Industriekaufmann/-frau · IHK-Prüfungsniveau

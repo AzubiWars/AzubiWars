@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateQuestions, type Kategorie, type Schwierigkeit } from "@/lib/anthropic";
+import { generateQuestions, type Kategorie, type Schwierigkeit } from "@/lib/gemini";
 import { addQuestions } from "@/lib/questions";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY nicht konfiguriert." },
+        { error: "GEMINI_API_KEY nicht konfiguriert." },
         { status: 500 }
       );
     }

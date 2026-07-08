@@ -14,7 +14,7 @@ export interface Player {
   zuletztAktiv: string;
 }
 
-export async function getOrCreatePlayer(nickname: string): Promise<Player> {
+export async function getOrCreatePlayer(nickname: string, playerId?: string): Promise<Player> {
   const db = getDb();
 
   // Suche existierenden Spieler per Nickname
@@ -34,7 +34,7 @@ export async function getOrCreatePlayer(nickname: string): Promise<Player> {
 
   // Neuen Spieler anlegen
   const newPlayer: Player = {
-    id: crypto.randomUUID(),
+    id: playerId ?? crypto.randomUUID(),
     nickname,
     xpGesamt: 0,
     beantwortet: 0,

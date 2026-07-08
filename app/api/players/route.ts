@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const player = await getOrCreatePlayer(nickname);
+    const player = await getOrCreatePlayer(nickname, body.playerId);
     return NextResponse.json(player, { status: 201 });
   } catch (error) {
     console.error("POST /api/players error:", error);
