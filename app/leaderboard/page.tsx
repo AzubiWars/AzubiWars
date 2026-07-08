@@ -56,7 +56,7 @@ export default function LeaderboardPage() {
   return (
     <div className="mx-auto max-w-2xl animate-slide-up space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-gray-800">🏆 Leaderboard</h1>
+        <h1 className="text-3xl font-extrabold text-gray-100">🏆 Leaderboard</h1>
         <p className="mt-1 text-gray-500">
           {usingFirestore ? "Die besten Azubis auf einen Blick" : "Deine persönlichen Stats"}
         </p>
@@ -84,13 +84,13 @@ export default function LeaderboardPage() {
               <div
                 key={player.id}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${
-                  isMe ? "bg-brand-50 ring-2 ring-brand-300" : "bg-white hover:bg-gray-50"
+                  isMe ? "bg-brand-50 ring-2 ring-[#D6462A]/30" : "bg-white hover:bg-gray-50"
                 }`}
               >
                 <span className="w-10 text-center font-bold text-sm">
                   {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`}
                 </span>
-                <span className={`flex-1 font-semibold ${isMe ? "text-brand-700" : "text-gray-800"}`}>
+                <span className={`flex-1 font-semibold ${isMe ? "text-[#D6462A]" : "text-gray-100"}`}>
                   {player.nickname}
                   {isMe && <span className="ml-2 text-xs text-brand-500">(Du)</span>}
                 </span>
@@ -117,7 +117,7 @@ export default function LeaderboardPage() {
           <div className="flex items-center gap-4 mb-4">
             <span className="text-4xl">{getRang(myXp).emoji}</span>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">{myNickname}</h2>
+              <h2 className="text-xl font-bold text-gray-100">{myNickname}</h2>
               <p className="text-sm text-brand-600 font-semibold">{getRang(myXp).name}</p>
             </div>
             <div className="ml-auto text-right">
@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                 <div
                   key={rank.name}
                   className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${
-                    isCurrent ? "bg-brand-100 font-bold" : isUnlocked ? "text-gray-600" : "text-gray-300"
+                    isCurrent ? "bg-[#D6462A]/10 font-bold" : isUnlocked ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
                   <span>{rank.emoji}</span>

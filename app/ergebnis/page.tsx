@@ -64,8 +64,8 @@ export default function ErgebnisPage() {
         <div className="text-6xl mb-4">
           {percentage >= 80 ? "🎉" : percentage >= 50 ? "👍" : "💪"}
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-800">Runde beendet!</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-3xl font-extrabold text-gray-100">Runde beendet!</h1>
+        <p className="mt-1 text-gray-400">
           {nickname} · {newRang.emoji} {newRang.name}
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function ErgebnisPage() {
       <div className="card text-center">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <div className="text-3xl font-extrabold text-brand-600">{roundCorrect}/{roundTotal}</div>
+            <div className="text-3xl font-extrabold text-[#D6462A]">{roundCorrect}/{roundTotal}</div>
             <div className="text-xs text-gray-400 mt-1">Richtig</div>
           </div>
           <div>
@@ -86,10 +86,10 @@ export default function ErgebnisPage() {
           </div>
         </div>
         {percentage >= 80 && (
-          <p className="mt-4 text-sm font-semibold text-brand-600">🌟 Super! Du bist top vorbereitet!</p>
+          <p className="mt-4 text-sm font-semibold text-[#D6462A]">🌟 Super! Du bist top vorbereitet!</p>
         )}
         {percentage < 50 && (
-          <p className="mt-4 text-sm font-semibold text-gray-500">💡 Weiter üben! Jeder Fehler macht dich stärker.</p>
+          <p className="mt-4 text-sm font-semibold text-gray-400">💡 Weiter üben! Jeder Fehler macht dich stärker.</p>
         )}
       </div>
 
@@ -106,9 +106,9 @@ export default function ErgebnisPage() {
               </span>
             </div>
             {newRang.xpToNext !== null && (
-              <div className="mt-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div className="mt-1 h-2 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-brand-500 transition-all duration-700"
+                  className="h-full rounded-full bg-[#D6462A] transition-all duration-700"
                   style={{ width: `${newRang.progress}%` }}
                 />
               </div>
@@ -117,8 +117,8 @@ export default function ErgebnisPage() {
         </div>
 
         {didRankUp && (
-          <div className="mt-3 rounded-xl bg-yellow-50 border border-yellow-200 p-3 text-center animate-bounce-in">
-            <p className="font-bold text-yellow-700">
+          <div className="mt-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 p-3 text-center animate-bounce-in">
+            <p className="font-bold text-yellow-300">
               🎉 Aufgestiegen! {oldRang.emoji} → {newRang.emoji} {newRang.name}!
             </p>
           </div>

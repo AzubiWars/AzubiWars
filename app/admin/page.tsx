@@ -50,8 +50,8 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-lg animate-slide-up space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-gray-800">🤖 Admin</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-3xl font-extrabold text-gray-100">🤖 Admin</h1>
+        <p className="mt-1 text-gray-400">
           Neue Fragen per Claude generieren und zum Pool hinzufügen
         </p>
       </div>
@@ -59,13 +59,13 @@ export default function AdminPage() {
       <div className="card space-y-4">
         {/* Kategorie */}
         <div>
-          <label className="mb-1 block text-sm font-semibold text-gray-600">
+          <label className="mb-1 block text-sm font-semibold text-gray-300">
             Kategorie
           </label>
           <select
             value={kategorie}
             onChange={(e) => setKategorie(e.target.value as Kategorie)}
-            className="w-full rounded-xl border-2 border-gray-200 px-4 py-2.5 text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+            className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-gray-100 outline-none focus:border-[#D6462A] focus:ring-2 focus:ring-[#D6462A]/20"
           >
             {KATEGORIEN.map((k) => (
               <option key={k} value={k}>
@@ -77,7 +77,7 @@ export default function AdminPage() {
 
         {/* Schwierigkeit */}
         <div>
-          <label className="mb-1 block text-sm font-semibold text-gray-600">
+          <label className="mb-1 block text-sm font-semibold text-gray-300">
             Schwierigkeit
           </label>
           <div className="flex gap-2 flex-wrap">
@@ -87,8 +87,8 @@ export default function AdminPage() {
                 onClick={() => setSchwierigkeit(s.value)}
                 className={`rounded-xl border-2 px-4 py-2 text-sm font-medium transition-all ${
                   schwierigkeit === s.value
-                    ? "border-brand-500 bg-brand-50 text-brand-700"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-[#D6462A] bg-[#D6462A]/10 text-[#D6462A]"
+                    : "border-white/10 text-gray-400 hover:border-white/20"
                 }`}
               >
                 {s.label}
@@ -99,7 +99,7 @@ export default function AdminPage() {
 
         {/* Anzahl */}
         <div>
-          <label className="mb-1 block text-sm font-semibold text-gray-600">
+          <label className="mb-1 block text-sm font-semibold text-gray-300">
             Anzahl (max. 10 pro Batch)
           </label>
           <input
@@ -143,7 +143,7 @@ export default function AdminPage() {
       </div>
 
       <div className="text-center">
-        <a href="/" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+        <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">
           Zurück zur Startseite
         </a>
       </div>

@@ -15,12 +15,12 @@ function getStreakBonus(streak: number): number {
   return 0;
 }
 
-// ── Fragen nach Schwierigkeit sortieren (leicht → mittel → schwer) ──
-function buildProgressiveRound(questions: SampleQuestion[], count: number): SampleQuestion[] {
-  const easy = questions.filter((q) => q.schwierigkeit === "leicht");
-  const medium = questions.filter((q) => q.schwierigkeit === "mittel");
-  const hard = questions.filter((q) => q.schwierigkeit === "schwer");
-
+// ── Fragen-Runde bauen (respektiert difficulty) ──
+function buildRound(
+  questions: SampleQuestion[],
+  count: number,
+  difficulty: string
+): SampleQuestion[] {
   const shuffle = <T,>(arr: T[]): T[] => {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -30,15 +30,22 @@ function buildProgressiveRound(questions: SampleQuestion[], count: number): Samp
     return a;
   };
 
-  // Pro Runde: ~3 leicht, ~4 mittel, ~3 schwer
+  // Einzelne Schwierigkeit gewählt → nur diese Fragen
+  if (difficulty !== "gemischt") {
+    const filtered = questions.filter((q) => q.schwierigkeit === difficulty);
+    return shuffle(filtered).slice(0, count);
+  }
+
+  // Gemischt: progressiv (leicht → mittel → schwer)
+  const easy = questions.filter((q) => q.schwierigkeit === "leicht");
+  const medium = questions.filter((q) => q.schwierigkeit === "mittel");
+  const hard = questions.filter((q) => q.schwierigkeit === "schwer");
+
   const pick = shuffle(easy).slice(0, 3);
   const pMed = shuffle(medium).slice(0, 4);
   const pHard = shuffle(hard).slice(0, 3);
 
-  // Kombinieren: leicht → mittel → schwer
   const result = [...pick, ...pMed, ...pHard];
-
-  // Falls nicht genug in einer Kategorie, mit restlichen auffüllen
   if (result.length < count) {
     const rest = shuffle(questions.filter((q) => !result.includes(q)));
     result.push(...rest.slice(0, count - result.length));
@@ -55,8 +62,11 @@ function getStorageNumber(key: string, fallback = 0): number {
 export default function PlayPage() {
   const router = useRouter();
 
-  // Progressive Fragen (leicht → schwer)
-  const questions = useMemo(() => buildProgressiveRound(SAMPLE_QUESTIONS, ROUND_SIZE), []);
+  // Fragen-Runde (respektiert gewählte Schwierigkeit)
+  const questions = useMemo(() => {
+    const diff = typeof window !== "undefined" ? localStorage.getItem("difficulty") ?? "gemischt" : "gemischt";
+    return buildRound(SAMPLE_QUESTIONS, ROUND_SIZE, diff);
+  }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);

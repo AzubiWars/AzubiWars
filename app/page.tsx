@@ -51,9 +51,34 @@ export default function LandingPage() {
     }
   }, []);
 
+  const DIFFICULTIES = [
+    { value: "gemischt", label: "🎯 Gemischt", desc: "Leicht → Schwer (progressiv)", color: "border-white/20 hover:border-[#D6462A]/50" },
+    { value: "leicht", label: "🟢 Leicht", desc: "Nur leichte Fragen (10 XP)", color: "border-green-500/30 hover:border-green-500/60" },
+    { value: "mittel", label: "🟡 Mittel", desc: "Nur mittlere Fragen (20 XP)", color: "border-yellow-500/30 hover:border-yellow-500/60" },
+    { value: "schwer", label: "🔴 Schwer", desc: "Nur schwere Fragen (30 XP)", color: "border-red-500/30 hover:border-red-500/60" },
+  ] as const;
+
+  type Difficulty = (typeof DIFFICULTIES)[number]["value"];
+  const [difficulty, setDifficulty] = useState<Difficulty>("gemischt");
+  const [showDifficulty, setShowDifficulty] = useState(false);
+  const [pendingNick, setPendingNick] = useState("");
+  const [pendingId, setPendingId] = useState("");
+
   const startGame = (nick: string, id: string) => {
-    localStorage.setItem("playerId", id);
-    localStorage.setItem("nickname", nick);
+    setPendingNick(nick);
+    setPendingId(id);
+    // Bestehende Schwierigkeit laden
+    const saved = localStorage.getItem("difficulty") as Difficulty | null;
+    if (saved && DIFFICULTIES.some((d) => d.value === saved)) {
+      setDifficulty(saved);
+    }
+    setShowDifficulty(true);
+  };
+
+  const confirmDifficulty = () => {
+    localStorage.setItem("playerId", pendingId);
+    localStorage.setItem("nickname", pendingNick);
+    localStorage.setItem("difficulty", difficulty);
     if (!localStorage.getItem("totalXp")) localStorage.setItem("totalXp", "0");
     if (!localStorage.getItem("totalCorrect")) localStorage.setItem("totalCorrect", "0");
     if (!localStorage.getItem("totalAnswered")) localStorage.setItem("totalAnswered", "0");
@@ -136,22 +161,57 @@ export default function LandingPage() {
         </p>
       </div>
 
-      {/* Features */}
-      <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
-        {[
-          { icon: "🎯", title: "6 Kategorien", desc: "IHK-Lernfelder" },
-          { icon: "📚", title: "35 Fragen", desc: "3 Schwierigkeiten" },
-          { icon: "🏆", title: "8 Ränge", desc: "Vom Neuling zum Ausbilder" },
-        ].map((f) => (
-          <div key={f.title} className="card text-center py-3 px-2">
-            <div className="text-xl sm:text-2xl mb-1">{f.icon}</div>
-            <div className="font-semibold text-xs sm:text-sm text-gray-200">{f.title}</div>
-            <div className="text-xs text-gray-400 hidden sm:block">{f.desc}</div>
-          </div>
-        ))}
-      </div>
+      {/* Features (hide when picking difficulty) */}
+      {!showDifficulty && (
+        <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
+          {[
+            { icon: "🎯", title: "6 Kategorien", desc: "IHK-Lernfelder" },
+            { icon: "📚", title: "35 Fragen", desc: "3 Schwierigkeiten" },
+            { icon: "🏆", title: "8 Ränge", desc: "Vom Neuling zum Ausbilder" },
+          ].map((f) => (
+            <div key={f.title} className="card text-center py-3 px-2">
+              <div className="text-xl sm:text-2xl mb-1">{f.icon}</div>
+              <div className="font-semibold text-xs sm:text-sm text-gray-200">{f.title}</div>
+              <div className="text-xs text-gray-400 hidden sm:block">{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* ── Auto-Login Card ── */}
+      {/* ── Difficulty Picker ── */}
+      {showDifficulty ? (
+        <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
+          <div>
+            <div className="text-4xl mb-2">⚙️</div>
+            <h2 className="text-xl font-bold text-gray-100">Schwierigkeit wählen</h2>
+            <p className="text-gray-400 text-sm mt-1">
+              {pendingNick}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {DIFFICULTIES.map((d) => (
+              <button
+                key={d.value}
+                onClick={() => setDifficulty(d.value)}
+                className={`w-full rounded-xl border-2 p-3 text-left transition-all ${
+                  difficulty === d.value
+                    ? d.color.replace("hover:", "").replace("/50", "") + " bg-white/5"
+                    : d.color + " bg-transparent"
+                } ${difficulty === d.value ? "ring-2 ring-white/10" : ""}`}
+              >
+                <div className="font-semibold text-gray-200">{d.label}</div>
+                <div className="text-xs text-gray-400">{d.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          <button onClick={confirmDifficulty} className="btn-primary w-full text-lg">
+            ⚔️ Spiel starten
+          </button>
+        </div>
+      ) : (
+        /* ── Auto-Login Card ── */
       {savedPlayer && !showNewPlayer ? (
         <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
           <div>
