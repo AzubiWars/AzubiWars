@@ -4,55 +4,45 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRang, getNextRank } from "@/lib/ranks";
 
-interface RoundResult {
-  questionId: string;
-  wasCorrect: boolean;
-  xpGained: number;
-}
-
 export default function ErgebnisPage() {
   const router = useRouter();
-  const [results, setResults] = useState<RoundResult[]>([]);
   const [roundXp, setRoundXp] = useState(0);
+  const [roundCorrect, setRoundCorrect] = useState(0);
+  const [roundTotal, setRoundTotal] = useState(0);
   const [streak, setStreak] = useState(0);
   const [startXp, setStartXp] = useState(0);
-  const [totalXp, setTotalXp] = useState(0);
   const [nickname, setNickname] = useState("");
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("roundResults");
+    const nick = sessionStorage.getItem("nickname");
     const rxp = sessionStorage.getItem("roundTotalXp");
     const str = sessionStorage.getItem("streak");
     const sxp = sessionStorage.getItem("startXp");
-    const nick = sessionStorage.getItem("nickname");
+    const resultsStr = sessionStorage.getItem("roundResults");
 
-    if (!stored || !nick) {
+    if (!nick) {
       router.replace("/");
       return;
     }
 
-    const parsed: RoundResult[] = JSON.parse(stored);
-    const roundXpVal = Number(rxp) || 0;
-    const startXpVal = Number(sxp) || 0;
-
-    setResults(parsed);
-    setRoundXp(roundXpVal);
-    setStreak(Number(str) || 0);
-    setStartXp(startXpVal);
-    setTotalXp(startXpVal + roundXpVal);
     setNickname(nick);
+    setRoundXp(Number(rxp) || 0);
+    setStreak(Number(str) || 0);
+    setStartXp(Number(sxp) || 0);
+
+    if (resultsStr) {
+      try {
+        const r = JSON.parse(resultsStr);
+        setRoundCorrect(r.roundCorrect || 0);
+        setRoundTotal(r.total || 10);
+      } catch { /* ignore */ }
+    }
+
+    setLoaded(true);
   }, [router]);
 
-  const correct = results.filter((r) => r.wasCorrect).length;
-  const total = results.length;
-  const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
-
-  const oldRang = getRang(startXp);
-  const newRang = getRang(totalXp);
-  const nextRank = getNextRank(totalXp);
-  const didRankUp = oldRang.name !== newRang.name;
-
-  if (results.length === 0) {
+  if (!loaded) {
     return (
       <div className="flex items-center justify-center py-20">
         <p className="text-gray-400">Lade Ergebnis…</p>
@@ -60,9 +50,16 @@ export default function ErgebnisPage() {
     );
   }
 
+  const totalXp = startXp + roundXp;
+  const percentage = roundTotal > 0 ? Math.round((roundCorrect / roundTotal) * 100) : 0;
+
+  const oldRang = getRang(startXp);
+  const newRang = getRang(totalXp);
+  const nextRank = getNextRank(totalXp);
+  const didRankUp = oldRang.name !== newRang.name;
+
   return (
     <div className="mx-auto max-w-lg animate-slide-up space-y-6">
-      {/* Titel */}
       <div className="text-center">
         <div className="text-6xl mb-4">
           {percentage >= 80 ? "🎉" : percentage >= 50 ? "👍" : "💪"}
@@ -73,11 +70,10 @@ export default function ErgebnisPage() {
         </p>
       </div>
 
-      {/* Score Card */}
       <div className="card text-center">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <div className="text-3xl font-extrabold text-brand-600">{correct}/{total}</div>
+            <div className="text-3xl font-extrabold text-brand-600">{roundCorrect}/{roundTotal}</div>
             <div className="text-xs text-gray-400 mt-1">Richtig</div>
           </div>
           <div>
@@ -89,20 +85,14 @@ export default function ErgebnisPage() {
             <div className="text-xs text-gray-400 mt-1">Beste Streak</div>
           </div>
         </div>
-
         {percentage >= 80 && (
-          <p className="mt-4 text-sm font-semibold text-brand-600">
-            🌟 Super! Du bist top vorbereitet!
-          </p>
+          <p className="mt-4 text-sm font-semibold text-brand-600">🌟 Super! Du bist top vorbereitet!</p>
         )}
         {percentage < 50 && (
-          <p className="mt-4 text-sm font-semibold text-gray-500">
-            💡 Weiter üben! Jeder Fehler macht dich stärker.
-          </p>
+          <p className="mt-4 text-sm font-semibold text-gray-500">💡 Weiter üben! Jeder Fehler macht dich stärker.</p>
         )}
       </div>
 
-      {/* Rang Fortschritt */}
       <div className="card">
         <div className="flex items-center gap-3 mb-3">
           <span className="text-2xl">{newRang.emoji}</span>
@@ -118,7 +108,7 @@ export default function ErgebnisPage() {
             {newRang.xpToNext !== null && (
               <div className="mt-1 h-2 rounded-full bg-gray-200 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-brand-500 transition-all duration-700 ease-out"
+                  className="h-full rounded-full bg-brand-500 transition-all duration-700"
                   style={{ width: `${newRang.progress}%` }}
                 />
               </div>
@@ -139,24 +129,17 @@ export default function ErgebnisPage() {
             Noch {nextRank.xpNeeded} XP bis {nextRank.emoji} {nextRank.name}
           </p>
         )}
-
-        {!nextRank && (
-          <p className="mt-3 text-xs text-gray-400 text-center">
-            Du hast den höchsten Rang erreicht! 🏆
-          </p>
-        )}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex flex-col gap-3">
         <button onClick={() => router.push("/play")} className="btn-primary text-lg">
           🔄 Noch eine Runde spielen
         </button>
         <button onClick={() => router.push("/leaderboard")} className="btn-secondary text-lg">
-          🏆 Leaderboard
+          🏆 Persönliche Stats
         </button>
         <button onClick={() => router.push("/")} className="btn-secondary text-lg">
-          🏠 Zurück zur Startseite
+          🏠 Startseite
         </button>
       </div>
     </div>
