@@ -18,9 +18,11 @@ export interface RankInfo {
   index: number;
 }
 
+type RankEntry = (typeof RANKS)[number];
+
 export function getRang(xp: number): RankInfo {
-  let currentRank = RANKS[0]!;
-  let nextRank: (typeof RANKS)[number] | null = RANKS[1] ?? null;
+  let currentRank: RankEntry = RANKS[0]!;
+  let nextRank: RankEntry | null = RANKS[1] ?? null;
 
   for (let i = RANKS.length - 1; i >= 0; i--) {
     const rank = RANKS[i]!;
