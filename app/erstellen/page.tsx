@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { KATEGORIEN, type Kategorie, type Schwierigkeit } from "@/lib/anthropic";
+import { AUSBILDUNGSBERUFE, type Ausbildungsberuf } from "@/lib/berufe";
 
 export default function ErstellenPage() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function ErstellenPage() {
   const [erklaerung, setErklaerung] = useState("");
   const [kategorie, setKategorie] = useState<Kategorie>(KATEGORIEN[0]);
   const [schwierigkeit, setSchwierigkeit] = useState<Schwierigkeit>("mittel");
+  const [beruf, setBeruf] = useState<Ausbildungsberuf>("Industriekaufmann/-frau");
+  const [berufSearch, setBerufSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -55,6 +58,7 @@ export default function ErstellenPage() {
           schwierigkeit,
           authorId: playerId,
           authorName: nickname,
+          beruf,
         }),
       });
 
@@ -181,6 +185,41 @@ export default function ErstellenPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Beruf */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-300">
+            Ausbildungsberuf <span className="text-xs text-gray-500">(für wen ist diese Frage?)</span>
+          </label>
+          <input
+            type="text"
+            value={berufSearch}
+            onChange={(e) => setBerufSearch(e.target.value)}
+            placeholder="🔍 Beruf suchen…"
+            className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-2.5 text-sm text-gray-100 outline-none focus:border-[#D6462A] placeholder:text-gray-500"
+          />
+          {berufSearch && (
+            <div className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a22]">
+              {AUSBILDUNGSBERUFE.filter((b) => b.toLowerCase().includes(berufSearch.toLowerCase())).slice(0, 15).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => { setBeruf(b); setBerufSearch(""); }}
+                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                    b === beruf ? "bg-[#D6462A]/10 text-[#D6462A]" : "text-gray-400 hover:bg-white/[0.04] hover:text-gray-200"
+                  }`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          )}
+          {!berufSearch && (
+            <p className="mt-1 text-xs text-gray-500">
+              Gewählt: <span className="text-[#D6462A]">{beruf}</span>
+            </p>
+          )}
         </div>
 
         {/* Preview Toggle */}

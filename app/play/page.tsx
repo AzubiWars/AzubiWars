@@ -67,10 +67,16 @@ export default function PlayPage() {
   const [allQuestions, setAllQuestions] = useState(SAMPLE_QUESTIONS);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
 
-  // Fragen-Runde (respektiert gewählte Schwierigkeit, inkl. Community-Fragen)
+  // Fragen-Runde (respektiert Schwierigkeit + Beruf, inkl. Community-Fragen)
   const questions = useMemo(() => {
     const diff = typeof window !== "undefined" ? localStorage.getItem("difficulty") ?? "gemischt" : "gemischt";
-    return buildRound(allQuestions, ROUND_SIZE, diff);
+    const beruf = typeof window !== "undefined" ? localStorage.getItem("beruf") ?? "Industriekaufmann/-frau" : "Industriekaufmann/-frau";
+    const byBeruf = allQuestions.filter((q) => {
+      const qBeruf = (q as Record<string, unknown>).beruf;
+      return !qBeruf || qBeruf === beruf;
+    });
+    const pool = byBeruf.length >= 5 ? byBeruf : allQuestions;
+    return buildRound(pool, ROUND_SIZE, diff);
   }, [allQuestions]);
 
   // Community-Fragen vom Server laden und mit lokalen mischen

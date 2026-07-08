@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { AUSBILDUNGSBERUFE, type Ausbildungsberuf } from "@/lib/berufe";
 
 const DIFFICULTIES = [
   { value: "gemischt", label: "🎯 Gemischt", desc: "Leicht → Schwer (progressiv)", color: "border-white/20 hover:border-[#D6462A]/50" },
@@ -17,8 +18,16 @@ export default function LandingPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [difficulty, setDifficulty] = useState<Difficulty>("gemischt");
+  const [beruf, setBeruf] = useState<Ausbildungsberuf>("Industriekaufmann/-frau");
+  const [berufSearch, setBerufSearch] = useState("");
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [loadingXp, setLoadingXp] = useState(true);
+
+  const filteredBerufe = useMemo(() => {
+    if (!berufSearch.trim()) return AUSBILDUNGSBERUFE.slice(0, 30);
+    const q = berufSearch.toLowerCase();
+    return AUSBILDUNGSBERUFE.filter((b) => b.toLowerCase().includes(q)).slice(0, 20);
+  }, [berufSearch]);
 
   // XP vom Server laden
   useEffect(() => {
@@ -42,6 +51,7 @@ export default function LandingPage() {
 
   const startGame = () => {
     localStorage.setItem("difficulty", difficulty);
+    localStorage.setItem("beruf", beruf);
     if (!localStorage.getItem("totalXp")) localStorage.setItem("totalXp", "0");
     if (!localStorage.getItem("totalCorrect")) localStorage.setItem("totalCorrect", "0");
     if (!localStorage.getItem("totalAnswered")) localStorage.setItem("totalAnswered", "0");
@@ -106,26 +116,68 @@ export default function LandingPage() {
           <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
             <div>
               <div className="text-4xl mb-2">⚙️</div>
-              <h2 className="text-xl font-bold text-gray-100">Schwierigkeit wählen</h2>
+              <h2 className="text-xl font-bold text-gray-100">Spiel konfigurieren</h2>
+              <p className="text-xs text-gray-400 mt-1">Wähle deinen Beruf & Schwierigkeit</p>
             </div>
-            <div className="space-y-2">
-              {DIFFICULTIES.map((d) => (
-                <button
-                  key={d.value}
-                  onClick={() => setDifficulty(d.value)}
-                  className={`w-full rounded-xl border-2 p-3 text-left transition-all ${
-                    difficulty === d.value
-                      ? d.color.replace("hover:", "").replace("/50", "") + " bg-white/5 ring-2 ring-white/10"
-                      : d.color + " bg-transparent"
-                  }`}
-                >
-                  <div className="font-semibold text-gray-200">{d.label}</div>
-                  <div className="text-xs text-gray-400">{d.desc}</div>
-                </button>
-              ))}
+
+            {/* Beruf Selector */}
+            <div className="text-left">
+              <label className="mb-1.5 block text-xs font-medium text-gray-400">Ausbildungsberuf</label>
+              <input
+                type="text"
+                value={berufSearch || (beruf !== "Industriekaufmann/-frau" ? beruf : "")}
+                onChange={(e) => { setBerufSearch(e.target.value); if (e.target.value === "") setBeruf("Industriekaufmann/-frau"); }}
+                placeholder="🔍 Beruf suchen… (z.B. Industriekaufmann)"
+                className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-2.5 text-sm text-gray-100 outline-none focus:border-[#D6462A] placeholder:text-gray-500"
+              />
+              {berufSearch && (
+                <div className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a22]">
+                  {filteredBerufe.map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => { setBeruf(b); setBerufSearch(""); }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        b === beruf ? "bg-[#D6462A]/10 text-[#D6462A]" : "text-gray-400 hover:bg-white/[0.04] hover:text-gray-200"
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                  {filteredBerufe.length === 0 && (
+                    <p className="px-4 py-2 text-xs text-gray-500">Kein Beruf gefunden.</p>
+                  )}
+                </div>
+              )}
+              {!berufSearch && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Gewählt: <span className="text-[#D6462A]">{beruf}</span>
+                </p>
+              )}
             </div>
+
+            {/* Difficulty */}
+            <div className="text-left">
+              <label className="mb-1.5 block text-xs font-medium text-gray-400">Schwierigkeit</label>
+              <div className="space-y-1.5">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => setDifficulty(d.value)}
+                    className={`w-full rounded-xl border-2 p-2.5 text-left transition-all text-sm ${
+                      difficulty === d.value
+                        ? d.color.replace("hover:", "").replace("/50", "") + " bg-white/5 ring-1 ring-white/10"
+                        : d.color + " bg-transparent"
+                    }`}
+                  >
+                    <span className="font-medium text-gray-200">{d.label}</span>
+                    <span className="text-gray-500 ml-2 text-xs">{d.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button onClick={startGame} className="btn-primary w-full text-lg">
-              ⚔️ Spiel starten
+              ⚡ Battle starten
             </button>
             <button onClick={() => setShowDifficulty(false)} className="text-sm text-gray-500 hover:text-gray-300">
               ← Zurück
