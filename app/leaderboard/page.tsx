@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getRang, RANKS } from "@/lib/ranks";
+import { getRang } from "@/lib/ranks";
+import { useAuth } from "@/lib/auth-context";
 
 interface LeaderboardPlayer {
   id: string;
@@ -13,33 +14,25 @@ interface LeaderboardPlayer {
 }
 
 export default function LeaderboardPage() {
+  const { user } = useAuth();
   const [players, setPlayers] = useState<LeaderboardPlayer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingFirestore, setUsingFirestore] = useState(false);
-  const [myPlayerId] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("playerId") ?? "" : ""
-  );
-  const [myNickname] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("nickname") ?? "" : ""
-  );
-  const [myXp] = useState(() =>
-    typeof window !== "undefined" ? parseInt(localStorage.getItem("totalXp") ?? "0", 10) : 0
-  );
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/players")
       .then((res) => {
-        if (!res.ok) throw new Error("API nicht verfügbar");
+        if (!res.ok) throw new Error(`Status ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        if (data.players && data.players.length > 0) {
+        if (data.players) {
           setPlayers(data.players);
-          setUsingFirestore(true);
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        setError(err.message);
         setLoading(false);
       });
   }, []);
@@ -47,7 +40,7 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-gray-500">Lade Leaderboard…</p>
+        <p className="text-gray-500">Lade Rangliste…</p>
       </div>
     );
   }
@@ -55,16 +48,32 @@ export default function LeaderboardPage() {
   return (
     <div className="mx-auto max-w-2xl animate-slide-up space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-300">🏆 Leaderboard</h1>
+        <h1 className="text-2xl font-bold text-gray-200">🏆 Globale Rangliste</h1>
         <p className="mt-1 text-sm text-gray-500">
-          {usingFirestore ? "Die besten Azubis" : "Deine Stats"}
+          {players.length > 0
+            ? `${players.length} Azubis im Ranking`
+            : "Noch keine Spieler"}
         </p>
       </div>
 
-      {/* Firestore Leaderboard */}
-      {usingFirestore && players.length > 0 && (
+      {error && (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-center text-sm text-red-400">
+          Rangliste temporär nicht verfügbar · {error}
+        </div>
+      )}
+
+      {players.length === 0 && !error && (
+        <div className="card text-center py-12 border-dashed">
+          <div className="text-4xl mb-3 opacity-50">👻</div>
+          <p className="text-gray-400 text-sm">Noch keine Spieler auf der Rangliste.</p>
+          <p className="text-gray-500 text-xs mt-1">Sei der Erste — starte eine Runde!</p>
+          <a href="/" className="btn-primary mt-4 inline-block text-sm">⚡ Battle starten</a>
+        </div>
+      )}
+
+      {players.length > 0 && (
         <div className="space-y-0.5">
-          {/* Table Header */}
+          {/* Header */}
           <div className="flex items-center gap-3 rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider text-gray-500">
             <span className="w-8 text-center">#</span>
             <span className="flex-1">Spieler</span>
@@ -75,12 +84,12 @@ export default function LeaderboardPage() {
 
           {players.map((player, index) => {
             const rang = getRang(player.xpGesamt);
-            const isMe = player.id === myPlayerId || player.nickname === myNickname;
+            const isMe = user && (player.id === user.uid);
+            const top3 = index < 3;
             const quote =
               player.beantwortet > 0
                 ? Math.round((player.richtig / player.beantwortet) * 100)
                 : 0;
-            const top3 = index < 3;
 
             return (
               <div
@@ -134,71 +143,14 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Keine Daten */}
-      {!myNickname && !usingFirestore && (
-        <div className="card text-center py-12 border-dashed">
-          <div className="text-4xl mb-3 opacity-50">👻</div>
-          <p className="text-gray-500 text-sm">Noch kein Spieler.</p>
-          <a href="/" className="btn-primary mt-4 inline-block text-sm">🚀 Jetzt starten</a>
-        </div>
-      )}
-
-      {/* Persönliche Stats Card */}
-      {myNickname && (
-        <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl">{getRang(myXp).emoji}</span>
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold text-gray-300 truncate">{myNickname}</h2>
-              <p className="text-xs text-[#D6462A]/80">{getRang(myXp).name}</p>
-            </div>
-            <div className="ml-auto text-right shrink-0">
-              <div className="text-xl font-bold text-gray-400">{myXp}</div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gesamt-XP</div>
-            </div>
-          </div>
-
-          {/* Rang Progress */}
-          <div className="space-y-0.5">
-            {RANKS.map((rank, i) => {
-              const currentIdx = getRang(myXp).index;
-              const isCurrent = currentIdx === i;
-              const isUnlocked = myXp >= rank.minXp;
-              return (
-                <div
-                  key={rank.name}
-                  className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
-                    isCurrent
-                      ? "bg-[#D6462A]/10 text-gray-200 font-medium"
-                      : isUnlocked
-                        ? "text-gray-500"
-                        : "text-gray-600"
-                  }`}
-                >
-                  <span className="w-5 text-center">{rank.emoji}</span>
-                  <span className="flex-1">{rank.name}</span>
-                  <span className="tabular-nums">
-                    {isUnlocked ? "✅" : `${rank.minXp} XP`}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Actions */}
       <div className="flex gap-2 justify-center">
-        <a href="/play" className="btn-primary text-sm px-5 py-2.5">🔄 Neue Runde</a>
-        <a href="/" className="btn-secondary text-sm px-5 py-2.5">🏠 Startseite</a>
+        <a href="/" className="btn-primary text-sm">⚡ Battlen</a>
+        <a href="/challenges" className="btn-secondary text-sm">📋 Community</a>
       </div>
 
-      {!usingFirestore && myNickname && (
-        <p className="text-center text-[11px] text-gray-600">
-          Sobald Firestore konfiguriert ist, erscheint hier die globale Rangliste.
-        </p>
-      )}
+      <p className="text-center text-[11px] text-gray-600">
+        Die Rangliste wird aus Firestore geladen. Aktualisiert nach jeder Runde.
+      </p>
     </div>
   );
 }

@@ -87,30 +87,58 @@ export default function NavBar() {
           </button>
 
           {open && (
-            <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-white/10 bg-[#1a1a22] shadow-xl shadow-black/50 overflow-hidden animate-slide-up z-50">
-              {/* User info */}
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-white/10 bg-[#1a1a22] shadow-xl shadow-black/50 overflow-hidden animate-slide-up z-50">
+              {/* User info + Stats */}
               <div className="px-4 py-3 border-b border-white/10">
-                <p className="text-sm font-medium text-gray-200 truncate">
+                <p className="text-sm font-semibold text-gray-200 truncate">
                   {user.email?.split("@")[0]}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-xs text-[#D6462A]">{rang.emoji} {rang.name}</span>
-                  <span className="text-xs text-gray-500">{xp} XP</span>
+                <p className="text-[11px] text-gray-500 truncate mt-0.5">{user.email}</p>
+
+                {/* Mini Stats Grid */}
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="rounded-lg bg-white/[0.04] px-2.5 py-2">
+                    <div className="text-xs text-gray-500">Rang</div>
+                    <div className="text-sm font-semibold text-[#D6462A]">{rang.emoji} {rang.name}</div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.04] px-2.5 py-2">
+                    <div className="text-xs text-gray-500">XP</div>
+                    <div className="text-sm font-semibold text-gray-200">{xp.toLocaleString()}</div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.04] px-2.5 py-2">
+                    <div className="text-xs text-gray-500">Richtig</div>
+                    <div className="text-sm font-semibold text-gray-200">
+                      {typeof window !== "undefined" ? localStorage.getItem("totalCorrect") ?? "0" : "0"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.04] px-2.5 py-2">
+                    <div className="text-xs text-gray-500">Beste Streak</div>
+                    <div className="text-sm font-semibold text-gray-200">
+                      🔥 {typeof window !== "undefined" ? localStorage.getItem("bestStreak") ?? "0" : "0"}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Menu items */}
               <div className="py-1">
-                <button
-                  onClick={() => { setOpen(false); router.push("/erstellen"); }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-white/[0.04] hover:text-gray-200 transition-colors"
+                <a
+                  href="/erstellen"
+                  onClick={() => setOpen(false)}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-white/[0.04] hover:text-gray-200 transition-colors flex items-center gap-2"
                 >
                   🛠️ Aufgabe erstellen
-                </button>
+                </a>
+                <a
+                  href="/leaderboard"
+                  onClick={() => setOpen(false)}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-white/[0.04] hover:text-gray-200 transition-colors flex items-center gap-2"
+                >
+                  🏆 Rangliste
+                </a>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-white/[0.04] hover:text-red-400 transition-colors"
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-white/[0.04] hover:text-red-400 transition-colors flex items-center gap-2"
                 >
                   🚪 Abmelden
                 </button>
