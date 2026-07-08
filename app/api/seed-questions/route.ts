@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { generateQuestions, type Kategorie, KATEGORIEN } from "@/lib/gemini";
+import { generateQuestions, type Kategorie } from "@/lib/gemini";
+import { KATEGORIEN } from "@/lib/anthropic";
 import { getDb } from "@/lib/firestore";
 
 export const runtime = "nodejs";
