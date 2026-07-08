@@ -149,6 +149,11 @@ export default function PlayPage() {
     });
   }, [allQuestions, selectedBeruf]);
 
+  // ── Community-Challenges für Browser ──
+  const communityChallenges = useMemo(() => {
+    return allQuestions.filter((q) => q.authorName && (!selectedBeruf || q.beruf === selectedBeruf));
+  }, [allQuestions, selectedBeruf]);
+
   // ── Quiz starten ──
   const startQuiz = (kategorie?: string) => {
     const pool = kategorie
@@ -244,23 +249,6 @@ export default function PlayPage() {
 
   // ═══════════════════ BROWSER MODE ═══════════════════
   if (mode === "browse") {
-    // Berufe mit verfügbaren Fragen (für Grid)
-    const berufStats = useMemo(() => {
-      const stats: Record<string, number> = {};
-      allQuestions.forEach((q) => {
-        const b = q.beruf || "Ohne Beruf";
-        stats[b] = (stats[b] || 0) + 1;
-      });
-      return Object.entries(stats)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 20);
-    }, [allQuestions]);
-
-    // Community Challenges für selectedBeruf
-    const communityChallenges = useMemo(() => {
-      return allQuestions.filter((q) => q.authorName && (!selectedBeruf || q.beruf === selectedBeruf));
-    }, [allQuestions, selectedBeruf]);
-
     return (
       <div className="animate-slide-up space-y-8">
         {/* Hero */}
