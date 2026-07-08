@@ -155,18 +155,18 @@ export default function PlayPage() {
   }, [allQuestions, selectedBeruf]);
 
   // ── Quiz starten ──
-  const startQuiz = (kategorie?: string) => {
-    const pool = kategorie
+  const startQuiz = (kategorie?: string, poolOverride?: SampleQuestion[]) => {
+    let pool = poolOverride ?? (kategorie
       ? allQuestions.filter((q) => q.kategorie === kategorie)
-      : filteredQuestions;
+      : filteredQuestions);
 
     const byBeruf = selectedBeruf
       ? pool.filter((q) => !q.beruf || q.beruf === selectedBeruf)
       : pool;
-    const finalPool = selectedBeruf && byBeruf.length >= 5 ? byBeruf : pool;
+    const finalPool = (selectedBeruf && byBeruf.length >= 5) ? byBeruf : pool;
 
     const round = buildRound(finalPool, ROUND_SIZE, selectedDifficulty);
-    if (round.length === 0) return; // keine Fragen
+    if (round.length === 0) return;
 
     setQuestions(round);
     setCurrentIndex(0);
@@ -349,16 +349,29 @@ export default function PlayPage() {
           {/* Community Challenges for this Beruf */}
           {communityChallenges.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                🛠️ Community-Challenges {selectedBeruf && `für ${selectedBeruf}`}
-              </h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                  🛠️ Community ({communityChallenges.length})
+                </h2>
+                <button
+                  onClick={() => startQuiz(undefined, communityChallenges)}
+                  className="text-xs text-[#D6462A] hover:text-[#e85d3f] transition-colors font-medium"
+                >
+                  Nur Community spielen →
+                </button>
+              </div>
               <div className="space-y-1">
-                {communityChallenges.slice(0, 5).map((q) => (
-                  <div key={q.id} className="card p-3 flex items-center gap-3 text-sm">
-                    <span className="text-xs text-gray-500 w-6">{q.schwierigkeit === "leicht" ? "🟢" : q.schwierigkeit === "mittel" ? "🟡" : "🔴"}</span>
-                    <span className="flex-1 text-gray-300 truncate">{q.frage}</span>
-                    <span className="text-xs text-[#D6462A]/70">{q.authorName}</span>
-                  </div>
+                {communityChallenges.slice(0, 10).map((q) => (
+                  <button
+                    key={q.id}
+                    onClick={() => startQuiz(undefined, [q])}
+                    className="card p-3 flex items-center gap-3 text-sm w-full text-left hover:bg-white/[0.06] transition-all group"
+                  >
+                    <span className="text-xs w-6 shrink-0">{q.schwierigkeit === "leicht" ? "🟢" : q.schwierigkeit === "mittel" ? "🟡" : "🔴"}</span>
+                    <span className="flex-1 text-gray-300 truncate group-hover:text-gray-200">{q.frage}</span>
+                    <span className="text-xs text-[#D6462A]/70 shrink-0">{q.authorName}</span>
+                    <span className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  </button>
                 ))}
               </div>
             </div>
