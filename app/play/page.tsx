@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SAMPLE_QUESTIONS } from "@/lib/sample-questions";
 import { getRang } from "@/lib/ranks";
@@ -16,6 +16,11 @@ function shuffleAndPick<T>(arr: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
+function getStorageNumber(key: string, fallback = 0): number {
+  if (typeof window === "undefined") return fallback;
+  return parseInt(sessionStorage.getItem(key) ?? String(fallback), 10);
+}
+
 export default function PlayPage() {
   const router = useRouter();
 
@@ -28,12 +33,14 @@ export default function PlayPage() {
   const [roundXp, setRoundXp] = useState(0);
   const [roundCorrect, setRoundCorrect] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [totalXpFromStorage, setTotalXpFromStorage] = useState(0);
+
+  useEffect(() => {
+    setTotalXpFromStorage(getStorageNumber("totalXp", 0));
+  }, []);
 
   const currentQuestion = questions[currentIndex];
   const progress = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
-
-  // Load persisted stats
-  const totalXpFromStorage = parseInt(sessionStorage.getItem("totalXp") ?? "0", 10);
   const totalXp = totalXpFromStorage + roundXp;
 
   const handleAnswer = useCallback(
