@@ -30,7 +30,11 @@ export async function GET() {
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    checks["Firestore"] = `❌ Fehler: ${msg.slice(0, 300)}`;
+    // Ganze Fehlermeldung zeigen
+    checks["Firestore"] = `❌ ${msg}`;
+    if (msg.includes("NOT_FOUND")) {
+      checks["HILFE"] = "Firestore-Datenbank existiert nicht! Gehe zu Firebase Console → Firestore Database → Datenbank erstellen (Native Mode, eur3, Testmodus)";
+    }
   }
 
   return NextResponse.json({
