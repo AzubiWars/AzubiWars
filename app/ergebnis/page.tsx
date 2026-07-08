@@ -15,11 +15,11 @@ export default function ErgebnisPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const nick = sessionStorage.getItem("nickname");
-    const rxp = sessionStorage.getItem("roundTotalXp");
-    const str = sessionStorage.getItem("streak");
-    const sxp = sessionStorage.getItem("startXp");
-    const resultsStr = sessionStorage.getItem("roundResults");
+    const nick = localStorage.getItem("nickname");
+    const rxp = localStorage.getItem("roundTotalXp");
+    const str = localStorage.getItem("streak");
+    const sxp = localStorage.getItem("startXp");
+    const resultsStr = localStorage.getItem("roundResults");
 
     if (!nick) {
       router.replace("/");

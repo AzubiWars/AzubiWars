@@ -17,13 +17,13 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [usingFirestore, setUsingFirestore] = useState(false);
   const [myPlayerId] = useState(() =>
-    typeof window !== "undefined" ? sessionStorage.getItem("playerId") ?? "" : ""
+    typeof window !== "undefined" ? localStorage.getItem("playerId") ?? "" : ""
   );
   const [myNickname] = useState(() =>
-    typeof window !== "undefined" ? sessionStorage.getItem("nickname") ?? "" : ""
+    typeof window !== "undefined" ? localStorage.getItem("nickname") ?? "" : ""
   );
   const [myXp] = useState(() =>
-    typeof window !== "undefined" ? parseInt(sessionStorage.getItem("totalXp") ?? "0", 10) : 0
+    typeof window !== "undefined" ? parseInt(localStorage.getItem("totalXp") ?? "0", 10) : 0
   );
 
   useEffect(() => {

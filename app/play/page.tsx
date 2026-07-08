@@ -49,7 +49,7 @@ function buildProgressiveRound(questions: SampleQuestion[], count: number): Samp
 
 function getStorageNumber(key: string, fallback = 0): number {
   if (typeof window === "undefined") return fallback;
-  return parseInt(sessionStorage.getItem(key) ?? String(fallback), 10);
+  return parseInt(localStorage.getItem(key) ?? String(fallback), 10);
 }
 
 export default function PlayPage() {
@@ -68,9 +68,29 @@ export default function PlayPage() {
   const [hintUsed, setHintUsed] = useState(false);
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]); // per 50:50 ausgeblendet
 
+  // ── Beim Laden: Player check + XP vom Server syncen ──
   useEffect(() => {
-    setTotalXpFromStorage(getStorageNumber("totalXp", 0));
-  }, []);
+    const playerId = localStorage.getItem("playerId");
+    if (!playerId) {
+      router.replace("/");
+      return;
+    }
+
+    // Lokale XP als Fallback
+    const localXp = getStorageNumber("totalXp", 0);
+    setTotalXpFromStorage(localXp);
+
+    // Vom Server aktuelle XP laden (Firestore)
+    fetch(`/api/players?id=${playerId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.xpGesamt !== undefined && data.xpGesamt > localXp) {
+          setTotalXpFromStorage(data.xpGesamt);
+          localStorage.setItem("totalXp", String(data.xpGesamt));
+        }
+      })
+      .catch(() => { /* Offline → lokale XP nutzen */ });
+  }, [router]);
 
   const currentQuestion = questions[currentIndex];
   const progress = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
@@ -117,18 +137,18 @@ export default function PlayPage() {
     if (currentIndex + 1 >= questions.length) {
       const newTotalXp = totalXpFromStorage + roundXp;
       const newTotalCorrect =
-        parseInt(sessionStorage.getItem("totalCorrect") ?? "0", 10) + roundCorrect;
+        parseInt(localStorage.getItem("totalCorrect") ?? "0", 10) + roundCorrect;
       const newTotalAnswered =
-        parseInt(sessionStorage.getItem("totalAnswered") ?? "0", 10) + questions.length;
-      const prevBestStreak = parseInt(sessionStorage.getItem("bestStreak") ?? "0", 10);
+        parseInt(localStorage.getItem("totalAnswered") ?? "0", 10) + questions.length;
+      const prevBestStreak = parseInt(localStorage.getItem("bestStreak") ?? "0", 10);
 
-      sessionStorage.setItem("totalXp", String(newTotalXp));
-      sessionStorage.setItem("totalCorrect", String(newTotalCorrect));
-      sessionStorage.setItem("totalAnswered", String(newTotalAnswered));
-      sessionStorage.setItem("bestStreak", String(Math.max(prevBestStreak, streak)));
+      localStorage.setItem("totalXp", String(newTotalXp));
+      localStorage.setItem("totalCorrect", String(newTotalCorrect));
+      localStorage.setItem("totalAnswered", String(newTotalAnswered));
+      localStorage.setItem("bestStreak", String(Math.max(prevBestStreak, streak)));
 
       // Sync mit Firestore
-      const playerId = sessionStorage.getItem("playerId");
+      const playerId = localStorage.getItem("playerId");
       if (playerId) {
         fetch("/api/players", {
           method: "PATCH",
@@ -137,10 +157,10 @@ export default function PlayPage() {
         }).catch(() => {});
       }
 
-      sessionStorage.setItem("roundResults", JSON.stringify({ roundXp, roundCorrect, streak, total: questions.length }));
-      sessionStorage.setItem("roundTotalXp", String(roundXp));
-      sessionStorage.setItem("streak", String(streak));
-      sessionStorage.setItem("startXp", String(totalXpFromStorage));
+      localStorage.setItem("roundResults", JSON.stringify({ roundXp, roundCorrect, streak, total: questions.length }));
+      localStorage.setItem("roundTotalXp", String(roundXp));
+      localStorage.setItem("streak", String(streak));
+      localStorage.setItem("startXp", String(totalXpFromStorage));
 
       router.push("/ergebnis");
     } else {

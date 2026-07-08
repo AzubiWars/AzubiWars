@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NavBar from "@/components/NavBar";
 
 export const metadata: Metadata = {
   title: "Azubi-Wars — Gamified Lernen für die Ausbildung",
@@ -34,11 +35,7 @@ export default function RootLayout({
                 Azubi-Wars
               </span>
             </a>
-            <nav className="flex items-center gap-4 text-sm font-medium text-gray-400">
-              <a href="/leaderboard" className="hover:text-[#D6462A] transition-colors">
-                🏆 Leaderboard
-              </a>
-            </nav>
+            <NavBar />
           </div>
         </header>
 
