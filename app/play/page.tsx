@@ -2,18 +2,49 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SAMPLE_QUESTIONS } from "@/lib/sample-questions";
+import { SAMPLE_QUESTIONS, type SampleQuestion } from "@/lib/sample-questions";
 import { getRang } from "@/lib/ranks";
 
 const ROUND_SIZE = 10;
 
-function shuffleAndPick<T>(arr: T[], count: number): T[] {
-  const shuffled = [...arr];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+// ── Streak-Bonus ──
+function getStreakBonus(streak: number): number {
+  if (streak >= 7) return 15;
+  if (streak >= 5) return 10;
+  if (streak >= 3) return 5;
+  return 0;
+}
+
+// ── Fragen nach Schwierigkeit sortieren (leicht → mittel → schwer) ──
+function buildProgressiveRound(questions: SampleQuestion[], count: number): SampleQuestion[] {
+  const easy = questions.filter((q) => q.schwierigkeit === "leicht");
+  const medium = questions.filter((q) => q.schwierigkeit === "mittel");
+  const hard = questions.filter((q) => q.schwierigkeit === "schwer");
+
+  const shuffle = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j]!, a[i]!];
+    }
+    return a;
+  };
+
+  // Pro Runde: ~3 leicht, ~4 mittel, ~3 schwer
+  const pick = shuffle(easy).slice(0, 3);
+  const pMed = shuffle(medium).slice(0, 4);
+  const pHard = shuffle(hard).slice(0, 3);
+
+  // Kombinieren: leicht → mittel → schwer
+  const result = [...pick, ...pMed, ...pHard];
+
+  // Falls nicht genug in einer Kategorie, mit restlichen auffüllen
+  if (result.length < count) {
+    const rest = shuffle(questions.filter((q) => !result.includes(q)));
+    result.push(...rest.slice(0, count - result.length));
   }
-  return shuffled.slice(0, count);
+
+  return result.slice(0, count);
 }
 
 function getStorageNumber(key: string, fallback = 0): number {
@@ -24,8 +55,8 @@ function getStorageNumber(key: string, fallback = 0): number {
 export default function PlayPage() {
   const router = useRouter();
 
-  // Shuffle questions once on mount
-  const questions = useMemo(() => shuffleAndPick(SAMPLE_QUESTIONS, ROUND_SIZE), []);
+  // Progressive Fragen (leicht → schwer)
+  const questions = useMemo(() => buildProgressiveRound(SAMPLE_QUESTIONS, ROUND_SIZE), []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -34,6 +65,8 @@ export default function PlayPage() {
   const [roundCorrect, setRoundCorrect] = useState(0);
   const [streak, setStreak] = useState(0);
   const [totalXpFromStorage, setTotalXpFromStorage] = useState(0);
+  const [hintUsed, setHintUsed] = useState(false);
+  const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]); // per 50:50 ausgeblendet
 
   useEffect(() => {
     setTotalXpFromStorage(getStorageNumber("totalXp", 0));
@@ -43,6 +76,22 @@ export default function PlayPage() {
   const progress = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
   const totalXp = totalXpFromStorage + roundXp;
 
+  // ── 50:50 Tipp ──
+  const handleHint = useCallback(() => {
+    if (isAnswered || hintUsed || !currentQuestion) return;
+
+    // Kosten: halbe XP der Frage (min. 5)
+    const cost = Math.max(5, Math.floor(currentQuestion.punkte / 2));
+    setRoundXp((prev) => prev - cost);
+    setHintUsed(true);
+
+    // Zwei falsche Optionen zufällig auswählen zum Ausblenden
+    const wrongIndices = [0, 1, 2, 3].filter((i) => i !== currentQuestion.korrekterIndex);
+    const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
+    setEliminatedOptions(shuffled.slice(0, 2));
+  }, [isAnswered, hintUsed, currentQuestion]);
+
+  // ── Antwort-Handler ──
   const handleAnswer = useCallback(
     (optionIndex: number) => {
       if (isAnswered || !currentQuestion) return;
@@ -51,8 +100,10 @@ export default function PlayPage() {
       setIsAnswered(true);
 
       const wasCorrect = optionIndex === currentQuestion.korrekterIndex;
-      const xpGained = wasCorrect ? currentQuestion.punkte : 0;
       const newStreak = wasCorrect ? streak + 1 : 0;
+      const baseXp = wasCorrect ? currentQuestion.punkte : 0;
+      const bonus = wasCorrect ? getStreakBonus(newStreak) : 0;
+      const xpGained = baseXp + bonus;
 
       setStreak(newStreak);
       setRoundXp((prev) => prev + xpGained);
@@ -61,9 +112,9 @@ export default function PlayPage() {
     [isAnswered, currentQuestion, streak]
   );
 
+  // ── Nächste Frage ──
   const handleNext = useCallback(() => {
     if (currentIndex + 1 >= questions.length) {
-      // Runde beendet → Ergebnisse speichern
       const newTotalXp = totalXpFromStorage + roundXp;
       const newTotalCorrect =
         parseInt(sessionStorage.getItem("totalCorrect") ?? "0", 10) + roundCorrect;
@@ -76,18 +127,14 @@ export default function PlayPage() {
       sessionStorage.setItem("totalAnswered", String(newTotalAnswered));
       sessionStorage.setItem("bestStreak", String(Math.max(prevBestStreak, streak)));
 
-      // Sync mit Firestore (falls verfügbar)
+      // Sync mit Firestore
       const playerId = sessionStorage.getItem("playerId");
       if (playerId) {
         fetch("/api/players", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerId,
-            xpGained: roundXp,
-            wasCorrect: roundCorrect > 0,
-          }),
-        }).catch(() => { /* Firestore nicht verfügbar, lokal weitermachen */ });
+          body: JSON.stringify({ playerId, xpGained: roundXp, wasCorrect: roundCorrect > 0 }),
+        }).catch(() => {});
       }
 
       sessionStorage.setItem("roundResults", JSON.stringify({ roundXp, roundCorrect, streak, total: questions.length }));
@@ -99,6 +146,8 @@ export default function PlayPage() {
     } else {
       setSelectedIndex(null);
       setIsAnswered(false);
+      setHintUsed(false);
+      setEliminatedOptions([]);
       setCurrentIndex((i) => i + 1);
     }
   }, [currentIndex, questions.length, roundXp, roundCorrect, streak, totalXpFromStorage, router]);
@@ -106,76 +155,98 @@ export default function PlayPage() {
   if (!currentQuestion) {
     return (
       <div className="card mx-auto max-w-md text-center py-12">
-        <p className="text-gray-500">Keine Fragen verfügbar.</p>
+        <p className="text-gray-300">Keine Fragen verfügbar.</p>
         <a href="/" className="btn-primary mt-4 inline-block">Zurück</a>
       </div>
     );
   }
 
   const rang = getRang(totalXp);
+  const streakBonus = getStreakBonus(streak);
+
+  // Schwierigkeits-Indikator für Progression
+  const difficultyPhase =
+    currentIndex < 3 ? "🟢 Leicht" : currentIndex < 7 ? "🟡 Mittel" : "🔴 Schwer";
 
   return (
     <div className="mx-auto max-w-2xl animate-slide-up">
-      {/* Top Bar */}
+      {/* ── Top Bar ── */}
       <div className="mb-6 space-y-3">
-        <div className="flex items-center gap-3 text-sm font-medium text-gray-500">
+        <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
           <span>Frage {currentIndex + 1}/{questions.length}</span>
-          <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-white/10">{difficultyPhase}</span>
+          <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full rounded-full bg-brand-500 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-700">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/20 px-3 py-1 text-sm font-semibold text-brand-300">
             ⭐ {totalXp} XP
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-600">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-gray-300">
             {rang.emoji} {rang.name}
           </span>
           {streak >= 3 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-600">
-              🔥 {streak}er Streak!
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/20 px-3 py-1 text-sm font-semibold text-orange-400">
+              🔥 {streak}er Streak{streakBonus > 0 && ` · +${streakBonus} Bonus`}!
+            </span>
+          )}
+          {streak > 0 && streak < 3 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-3 py-1 text-sm font-semibold text-orange-300">
+              🔥 {streak}
             </span>
           )}
         </div>
       </div>
 
-      {/* Question Card */}
-      <div className="card mb-4">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="rounded-lg bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+      {/* ── Question Card ── */}
+      <div className="rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-6 mb-4">
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
+          <span className="rounded-lg bg-white/10 px-2 py-0.5 text-xs font-medium text-gray-400">
             {currentQuestion.kategorie}
           </span>
           <span
             className={`rounded-lg px-2 py-0.5 text-xs font-semibold ${
               currentQuestion.schwierigkeit === "leicht"
-                ? "bg-green-100 text-green-700"
+                ? "bg-green-500/20 text-green-400"
                 : currentQuestion.schwierigkeit === "mittel"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : "bg-red-500/20 text-red-400"
             }`}
           >
             {currentQuestion.schwierigkeit} · {currentQuestion.punkte} XP
           </span>
+          {hintUsed && (
+            <span className="rounded-lg bg-purple-500/20 px-2 py-0.5 text-xs font-semibold text-purple-400">
+              💡 Tipp genutzt
+            </span>
+          )}
         </div>
 
-        <h2 className="mb-6 text-lg sm:text-xl font-bold text-gray-800 leading-relaxed">
+        <h2 className="mb-6 text-lg sm:text-xl font-bold text-gray-100 leading-relaxed">
           {currentQuestion.frage}
         </h2>
 
         <div className="space-y-2.5">
           {currentQuestion.optionen.map((option, idx) => {
-            let btnClass = "option-btn";
+            const isEliminated = eliminatedOptions.includes(idx);
+
+            let btnClass = "option-btn border-white/10 text-gray-200 hover:border-brand-400/50 hover:bg-brand-500/10";
             if (isAnswered) {
               if (idx === currentQuestion.korrekterIndex) {
-                btnClass += " option-btn-correct";
+                btnClass = "option-btn option-btn-correct border-green-500/50 bg-green-500/10 text-green-300";
               } else if (idx === selectedIndex && idx !== currentQuestion.korrekterIndex) {
-                btnClass += " option-btn-wrong";
+                btnClass = "option-btn option-btn-wrong border-red-500/50 bg-red-500/10 text-red-300";
+              } else {
+                btnClass = "option-btn option-btn-disabled opacity-40";
               }
-              btnClass += " option-btn-disabled";
+            }
+            if (isEliminated) {
+              btnClass += " opacity-20 line-through";
             }
 
             return (
@@ -183,18 +254,21 @@ export default function PlayPage() {
                 key={idx}
                 className={btnClass}
                 onClick={() => handleAnswer(idx)}
-                disabled={isAnswered}
+                disabled={isAnswered || isEliminated}
               >
                 <span className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-sm font-bold text-gray-500">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-gray-400">
                     {["A", "B", "C", "D"][idx]}
                   </span>
-                  <span className="text-left text-gray-700">{option}</span>
+                  <span className="text-left">{option}</span>
                   {isAnswered && idx === currentQuestion.korrekterIndex && (
-                    <span className="ml-auto text-green-500 text-lg">✅</span>
+                    <span className="ml-auto text-green-400 text-lg">✅</span>
                   )}
                   {isAnswered && idx !== currentQuestion.korrekterIndex && idx === selectedIndex && (
-                    <span className="ml-auto text-red-500 text-lg">❌</span>
+                    <span className="ml-auto text-red-400 text-lg">❌</span>
+                  )}
+                  {isEliminated && (
+                    <span className="ml-auto text-gray-500 text-sm">🚫</span>
                   )}
                 </span>
               </button>
@@ -202,34 +276,62 @@ export default function PlayPage() {
           })}
         </div>
 
+        {/* ── Feedback ── */}
         {isAnswered && (
           <div
             className={`mt-4 rounded-xl p-4 animate-slide-up ${
               selectedIndex === currentQuestion.korrekterIndex
-                ? "bg-green-50 border border-green-200"
-                : "bg-red-50 border border-red-200"
+                ? "bg-green-500/10 border border-green-500/30"
+                : "bg-red-500/10 border border-red-500/30"
             }`}
           >
-            <p className="font-semibold mb-1 text-sm">
+            <p className="font-semibold mb-1 text-sm text-gray-200">
               {selectedIndex === currentQuestion.korrekterIndex
                 ? "✅ Richtig!"
                 : `❌ Leider falsch. Richtig ist ${["A", "B", "C", "D"][currentQuestion.korrekterIndex]}.`}
             </p>
             {selectedIndex === currentQuestion.korrekterIndex && (
-              <p className="text-sm font-medium text-green-700">+{currentQuestion.punkte} XP</p>
+              <p className="text-sm font-medium text-green-400">
+                +{currentQuestion.punkte} XP
+                {streakBonus > 0 && streak >= 3 && (
+                  <span className="text-orange-400"> · +{streakBonus} Streak-Bonus 🔥</span>
+                )}
+              </p>
             )}
-            <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+            <p className="mt-2 text-sm text-gray-400 leading-relaxed">
               💡 {currentQuestion.erklaerung}
             </p>
           </div>
         )}
       </div>
 
-      {isAnswered && (
-        <button onClick={handleNext} className="btn-primary w-full text-lg animate-slide-up">
-          {currentIndex + 1 >= questions.length ? "🏁 Ergebnis anzeigen" : "👉 Weiter"}
-        </button>
-      )}
+      {/* ── Actions ── */}
+      <div className="space-y-3">
+        {/* 50:50 Tipp Button */}
+        {!isAnswered && !hintUsed && (
+          <button
+            onClick={handleHint}
+            className="w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm font-semibold text-purple-400 transition-all hover:bg-purple-500/20 hover:border-purple-500/50 active:scale-[0.98]"
+          >
+            💡 50:50-Tipp ({Math.max(5, Math.floor(currentQuestion.punkte / 2))} XP) —
+            Entfernt zwei falsche Antworten
+          </button>
+        )}
+
+        {isAnswered && (
+          <button onClick={handleNext} className="btn-primary w-full text-lg animate-slide-up bg-brand-600 hover:bg-brand-500">
+            {currentIndex + 1 >= questions.length ? "🏁 Ergebnis anzeigen" : "👉 Weiter"}
+          </button>
+        )}
+
+        {!isAnswered && (
+          <div className="text-center">
+            <a href="/" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+              Abbrechen
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -61,14 +61,14 @@ export default function LandingPage() {
           </svg>
         </div>
         <h1 className="mb-3 text-4xl sm:text-5xl font-extrabold tracking-tight">
-          <span className="bg-gradient-to-r from-brand-600 via-brand-700 to-brand-900 bg-clip-text text-transparent">
+          <span className="text-[#D6462A]">
             Azubi-Wars
           </span>
         </h1>
-        <p className="mb-2 text-lg sm:text-xl font-semibold text-gray-700">
+        <p className="mb-2 text-lg sm:text-xl font-semibold text-gray-200">
           Gamified Lernen für die Ausbildung 🎮📚
         </p>
-        <p className="mx-auto mb-6 max-w-md text-balance text-sm sm:text-base text-gray-500">
+        <p className="mx-auto mb-6 max-w-md text-balance text-sm sm:text-base text-gray-400">
           Meistere IHK-Prüfungsfragen, sammle XP, steige im Rang auf. Vom{" "}
           <strong>Neuling</strong> bis zum <strong>Ausbilder</strong>.
         </p>
@@ -83,7 +83,7 @@ export default function LandingPage() {
         ].map((f) => (
           <div key={f.title} className="card text-center py-3 px-2">
             <div className="text-xl sm:text-2xl mb-1">{f.icon}</div>
-            <div className="font-semibold text-xs sm:text-sm text-gray-800">{f.title}</div>
+            <div className="font-semibold text-xs sm:text-sm text-gray-200">{f.title}</div>
             <div className="text-xs text-gray-400 hidden sm:block">{f.desc}</div>
           </div>
         ))}
@@ -91,7 +91,7 @@ export default function LandingPage() {
 
       {/* Nickname Input */}
       <div className="card w-full max-w-md animate-bounce-in">
-        <label htmlFor="nickname" className="mb-2 block font-semibold text-gray-700">
+        <label htmlFor="nickname" className="mb-2 block font-semibold text-gray-200">
           Dein Nickname
         </label>
         <input
@@ -105,7 +105,7 @@ export default function LandingPage() {
           onKeyDown={(e) => e.key === "Enter" && handleStart()}
           placeholder="z. B. AzubiPro99"
           maxLength={20}
-          className="mb-3 w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-lg font-medium outline-none transition-all duration-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+          className="mb-3 w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-3 text-lg font-medium text-gray-100 outline-none transition-all duration-200 focus:border-[#D6462A] focus:ring-2 focus:ring-[#D6462A]/20 placeholder:text-gray-500"
           autoFocus
         />
         {error && (

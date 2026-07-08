@@ -4,41 +4,64 @@
 
 @layer base {
   :root {
-    --color-brand: #2563eb;
+    --color-brand: #D6462A;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-[#0f0f13] text-gray-100 antialiased;
+  }
+
+  /* Subtle grid pattern overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.03;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* Red glow accent */
+  body::after {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 0%, rgba(214,70,42,0.08) 0%, transparent 60%);
+    pointer-events: none;
   }
 }
 
 @layer components {
   .card {
-    @apply rounded-2xl bg-white p-6 shadow-lg ring-1 ring-gray-100;
+    @apply rounded-2xl bg-white/5 backdrop-blur-sm p-6 border border-white/10;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center rounded-xl bg-[#D6462A] px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#c13d24] hover:shadow-lg hover:shadow-[#D6462A]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-xl bg-white/10 px-6 py-3 font-semibold text-gray-300 transition-all duration-200 hover:bg-white/15 active:scale-[0.98];
   }
 
   .option-btn {
-    @apply w-full rounded-xl border-2 border-gray-200 p-4 text-left font-medium transition-all duration-200 hover:border-brand-400 hover:bg-brand-50 active:scale-[0.98];
-  }
-
-  .option-btn-selected {
-    @apply border-brand-500 bg-brand-50;
+    @apply w-full rounded-xl border-2 border-white/10 p-4 text-left font-medium transition-all duration-200 hover:border-[#D6462A]/50 hover:bg-[#D6462A]/5 active:scale-[0.98];
   }
 
   .option-btn-correct {
-    @apply border-green-500 bg-green-50;
+    @apply border-green-500/50 bg-green-500/10;
   }
 
   .option-btn-wrong {
-    @apply border-red-500 bg-red-50;
+    @apply border-red-500/50 bg-red-500/10;
   }
 
   .option-btn-disabled {

@@ -17,8 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-brand-50">
-        <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <body className="min-h-screen bg-[#0f0f13] relative">
+        {/* Grid & Glow are in globals.css ::before/::after */}
+
+        <header className="border-b border-white/10 bg-[#0f0f13]/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <a href="/" className="flex items-center gap-2 font-extrabold text-xl tracking-tight">
               <svg viewBox="0 0 200 200" className="h-8 w-8 flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
@@ -28,19 +30,21 @@ export default function RootLayout({
                 <g transform="translate(100,100) rotate(45)"><polygon points="0,-66 5,-46 5,40 -5,40 -5,-46" fill="#D6462A"/><rect x="-18" y="40" width="36" height="8" fill="#D6462A"/></g>
                 <polygon points="100,85 115,100 100,115 85,100" fill="#17181C"/>
               </svg>
-              <span className="bg-gradient-to-r from-brand-600 to-brand-800 bg-clip-text text-transparent">
+              <span className="text-[#D6462A]">
                 Azubi-Wars
               </span>
             </a>
-            <nav className="flex items-center gap-4 text-sm font-medium text-gray-600">
-              <a href="/leaderboard" className="hover:text-brand-600 transition-colors">
+            <nav className="flex items-center gap-4 text-sm font-medium text-gray-400">
+              <a href="/leaderboard" className="hover:text-[#D6462A] transition-colors">
                 🏆 Leaderboard
               </a>
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
-        <footer className="mt-auto border-t border-gray-200 bg-white py-6 text-center text-sm text-gray-400">
+
+        <main className="relative z-10 mx-auto max-w-4xl px-4 py-8">{children}</main>
+
+        <footer className="relative z-10 mt-auto border-t border-white/10 bg-white/5 py-6 text-center text-sm text-gray-500">
           Azubi-Wars — Gamified Lernen für Azubis
         </footer>
       </body>
