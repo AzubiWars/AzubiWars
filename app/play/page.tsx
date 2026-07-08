@@ -251,19 +251,18 @@ export default function PlayPage() {
           <button onClick={() => startQuiz()} className="btn-primary text-lg px-8 py-3 w-full sm:w-auto">
             🎲 Zufällige Runde starten
           </button>
-          <div className="flex items-center gap-2 bg-white/[0.04] rounded-xl p-1.5">
-            {(["leicht", "mittel", "schwer", "gemischt"] as const).map((d) => (
+          <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1">
+            {(["gemischt", "leicht", "mittel", "schwer"] as const).map((d) => (
               <button
                 key={d}
                 onClick={() => setSelectedDifficulty(d)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   selectedDifficulty === d
-                    ? "bg-[#D6462A] text-white"
-                    : "text-gray-400 hover:text-gray-200"
+                    ? "bg-[#D6462A] text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
                 }`}
               >
-                {d === "gemischt" ? "🎯 Mix" : d === "leicht" ? "🟢" : d === "mittel" ? "🟡" : "🔴"}
-                <span className="ml-1 hidden sm:inline">{d}</span>
+                {d === "gemischt" ? "🎯 Mix" : d === "leicht" ? "🟢 Leicht" : d === "mittel" ? "🟡 Mittel" : "🔴 Schwer"}
               </button>
             ))}
           </div>
