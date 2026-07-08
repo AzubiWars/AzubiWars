@@ -246,4 +246,332 @@ export const SAMPLE_QUESTIONS: SampleQuestion[] = [
       "Die volle Geschäftsfähigkeit tritt mit Vollendung des 18. Lebensjahres ein (§ 2 BGB). Zwischen 7 und 17 Jahren ist man beschränkt geschäftsfähig.",
     punkte: 20,
   },
+
+  // ═══════════════════════════════════════════
+  // Neue Fragen aus Industriekaufmann_Quizfragen.txt
+  // ═══════════════════════════════════════════
+
+  // ── Leichte Fragen ──
+  {
+    id: "s16",
+    kategorie: "Wirtschafts- & Sozialkunde (Recht, BGB/HGB, Arbeitsrecht, Sozialversicherung)",
+    schwierigkeit: "leicht",
+    frage: "Was bedeutet die Abkürzung BWL?",
+    optionen: [
+      "Betriebswirtschaftslehre",
+      "Berufsweiterbildung Lehrgang",
+      "Bundeswirtschaftsliga",
+      "Betriebswarenlager",
+    ],
+    korrekterIndex: 0,
+    erklaerung:
+      "BWL steht für Betriebswirtschaftslehre. Sie befasst sich mit wirtschaftlichen Entscheidungen und Abläufen in Betrieben — im Gegensatz zur VWL (Volkswirtschaftslehre), die gesamtwirtschaftliche Zusammenhänge betrachtet.",
+    punkte: 10,
+  },
+  {
+    id: "s17",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "leicht",
+    frage: "Was ist eine Rechnung?",
+    optionen: [
+      "Ein Vertrag",
+      "Eine Zahlungsaufforderung",
+      "Ein Lieferschein",
+      "Ein Angebot",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Eine Rechnung ist eine Zahlungsaufforderung an den Kunden für eine erbrachte Leistung oder gelieferte Ware. Sie enthält u. a. Leistungsbeschreibung, Betrag, Umsatzsteuer und Zahlungsziel.",
+    punkte: 10,
+  },
+  {
+    id: "s18",
+    kategorie: "Personalwirtschaft",
+    schwierigkeit: "leicht",
+    frage: "Welche Abteilung kümmert sich um Mitarbeiter?",
+    optionen: [
+      "Einkauf",
+      "Vertrieb",
+      "Personalabteilung",
+      "Produktion",
+    ],
+    korrekterIndex: 2,
+    erklaerung:
+      "Die Personalabteilung (auch HR = Human Resources) ist für alle Mitarbeiterbelange zuständig: Einstellung, Verträge, Gehaltsabrechnung, Weiterbildung und Kündigung.",
+    punkte: 10,
+  },
+  {
+    id: "s19",
+    kategorie: "Absatz & Marketing",
+    schwierigkeit: "leicht",
+    frage: "Was ist ein Angebot im kaufmännischen Sinne?",
+    optionen: [
+      "Eine Rechnung",
+      "Eine Anfrage",
+      "Eine unverbindliche Aufforderung zum Kauf",
+      "Ein Vertrag",
+    ],
+    korrekterIndex: 2,
+    erklaerung:
+      "Ein Angebot ist eine unverbindliche Aufforderung an den Kunden, ein konkretes Geschäft abzuschließen. Rechtlich ist es eine invitatio ad offerendum (Aufforderung zur Abgabe eines Angebots), noch kein bindender Vertrag.",
+    punkte: 10,
+  },
+  {
+    id: "s20",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "leicht",
+    frage: "Was bedeutet Umsatz?",
+    optionen: [
+      "Gewinn",
+      "Einnahmen aus Verkäufen",
+      "Steuer",
+      "Verlust",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Der Umsatz bezeichnet die Summe aller Einnahmen aus dem Verkauf von Waren und Dienstleistungen in einer Periode — ohne Abzug von Kosten. Der Gewinn ergibt sich erst nach Abzug aller Kosten vom Umsatz.",
+    punkte: 10,
+  },
+  {
+    id: "s21",
+    kategorie: "Absatz & Marketing",
+    schwierigkeit: "leicht",
+    frage: "Was gehört zum Marketing?",
+    optionen: [
+      "Personal einstellen",
+      "Werbung",
+      "Buchhaltung",
+      "Lagerhaltung",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Werbung ist ein zentrales Instrument der Kommunikationspolitik im Marketing-Mix. Marketing umfasst die 4 Ps: Product, Price, Place, Promotion (Produkt-, Preis-, Distributions- und Kommunikationspolitik).",
+    punkte: 10,
+  },
+  {
+    id: "s22",
+    kategorie: "Beschaffung & Lagerhaltung",
+    schwierigkeit: "leicht",
+    frage: "Was ist ein Lager?",
+    optionen: [
+      "Ort zur Warenaufbewahrung",
+      "Bürogebäude",
+      "Parkplatz",
+      "Produktionsmaschine",
+    ],
+    korrekterIndex: 0,
+    erklaerung:
+      "Ein Lager dient der Aufbewahrung von Waren, Rohstoffen oder Fertigerzeugnissen. Es überbrückt Zeitdifferenzen zwischen Beschaffung, Produktion und Absatz und ist Teil der Logistikkette.",
+    punkte: 10,
+  },
+  {
+    id: "s23",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "leicht",
+    frage: "Was bedeutet Skonto?",
+    optionen: [
+      "Ratenzahlung",
+      "Preisnachlass bei schneller Zahlung",
+      "Mahngebühr",
+      "Steuerabzug",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Skonto ist ein prozentualer Preisnachlass, den der Lieferant bei Zahlung innerhalb einer bestimmten Frist gewährt (z. B. '2 % Skonto bei Zahlung innerhalb von 10 Tagen'). Es dient der Liquiditätssicherung des Verkäufers.",
+    punkte: 10,
+  },
+  {
+    id: "s24",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "leicht",
+    frage: "Welche Steuer steht auf den meisten Rechnungen?",
+    optionen: [
+      "Hundesteuer",
+      "Kirchensteuer",
+      "Umsatzsteuer",
+      "Gewerbesteuer",
+    ],
+    korrekterIndex: 2,
+    erklaerung:
+      "Die Umsatzsteuer (auch Mehrwertsteuer genannt) wird auf fast alle Lieferungen und Leistungen im Inland erhoben. Der Regelsteuersatz beträgt 19 %, der ermäßigte Satz 7 %.",
+    punkte: 10,
+  },
+  {
+    id: "s25",
+    kategorie: "Beschaffung & Lagerhaltung",
+    schwierigkeit: "leicht",
+    frage: "Was macht der Einkauf?",
+    optionen: [
+      "Kunden beraten",
+      "Waren beschaffen",
+      "Rechnungen schreiben",
+      "Werbung erstellen",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Der Einkauf (Beschaffung) ist für die Versorgung des Unternehmens mit benötigten Waren, Rohstoffen und Dienstleistungen zuständig — zum richtigen Zeitpunkt, in der richtigen Menge und Qualität, zum besten Preis.",
+    punkte: 10,
+  },
+
+  // ── Schwere Fragen ──
+  {
+    id: "s26",
+    kategorie: "Kosten- & Leistungsrechnung / Controlling",
+    schwierigkeit: "schwer",
+    frage: "Was versteht man unter dem Deckungsbeitrag?",
+    optionen: [
+      "Umsatz minus Gewinn",
+      "Erlöse minus variable Kosten",
+      "Umsatz minus Steuern",
+      "Gewinn minus Fixkosten",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Der Deckungsbeitrag ist die Differenz zwischen Erlösen und variablen Kosten. Er dient zur Deckung der Fixkosten. Alles, was danach übrig bleibt, ist Gewinn (DB = E − Kv).",
+    punkte: 30,
+  },
+  {
+    id: "s27",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Welche Bilanzposition gehört zum Anlagevermögen?",
+    optionen: [
+      "Kasse",
+      "Bank",
+      "Fuhrpark",
+      "Forderungen",
+    ],
+    korrekterIndex: 2,
+    erklaerung:
+      "Der Fuhrpark (Firmenfahrzeuge) gehört zum Sachanlagevermögen und steht auf der Aktivseite. Kasse, Bank und Forderungen sind dem Umlaufvermögen zugeordnet, da sie kurzfristig gebunden sind.",
+    punkte: 30,
+  },
+  {
+    id: "s28",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Was passiert bei einer Inventur?",
+    optionen: [
+      "Mitarbeiter werden gezählt",
+      "Vermögenswerte und Schulden werden erfasst",
+      "Rechnungen werden bezahlt",
+      "Kunden werden analysiert",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Die Inventur ist die körperliche oder buchmäßige Bestandsaufnahme aller Vermögenswerte und Schulden zu einem bestimmten Stichtag. Sie ist Grundlage für den Jahresabschluss (§§ 240, 241 HGB).",
+    punkte: 30,
+  },
+  {
+    id: "s29",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Welche Formel beschreibt den Gewinn?",
+    optionen: [
+      "Umsatz + Kosten",
+      "Umsatz − Kosten",
+      "Kosten − Umsatz",
+      "Umsatz × Kosten",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Gewinn = Umsatz (Erlöse) − Kosten. Übersteigen die Kosten den Umsatz, entsteht ein Verlust. Der Gewinn ist die zentrale Kennzahl für den wirtschaftlichen Erfolg eines Unternehmens.",
+    punkte: 30,
+  },
+  {
+    id: "s30",
+    kategorie: "Wirtschafts- & Sozialkunde (Recht, BGB/HGB, Arbeitsrecht, Sozialversicherung)",
+    schwierigkeit: "schwer",
+    frage: "Was ist ein Zielkonflikt in Unternehmen?",
+    optionen: [
+      "Zwei identische Ziele",
+      "Sich widersprechende Ziele",
+      "Keine Unternehmensziele",
+      "Ein Bilanzfehler",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Ein Zielkonflikt liegt vor, wenn die Verfolgung eines Ziels die Erreichung eines anderen Ziels beeinträchtigt (z. B. hohe Qualität vs. niedrige Kosten, oder ökonomische vs. ökologische Ziele).",
+    punkte: 30,
+  },
+  {
+    id: "s31",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Was bedeutet Liquidität?",
+    optionen: [
+      "Rentabilität",
+      "Zahlungsfähigkeit",
+      "Vermögen",
+      "Gewinn",
+    ],
+    korrekterIndex: 1,
+    erklaerung:
+      "Liquidität bezeichnet die Fähigkeit eines Unternehmens, seinen Zahlungsverpflichtungen jederzeit fristgerecht nachzukommen. Fehlende Liquidität ist der häufigste Insolvenzgrund — selbst bei profitablem Geschäft.",
+    punkte: 30,
+  },
+  {
+    id: "s32",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Welches Dokument begründet eine Forderung gegen einen Kunden?",
+    optionen: [
+      "Bestellung",
+      "Angebot",
+      "Rechnung",
+      "Inventur",
+    ],
+    korrekterIndex: 2,
+    erklaerung:
+      "Die Rechnung begründet eine Forderung aus Lieferung und Leistung (LuL). Sie entsteht mit Auslieferung der Ware oder Erbringung der Leistung und wird auf der Aktivseite der Bilanz unter Umlaufvermögen ausgewiesen.",
+    punkte: 30,
+  },
+  {
+    id: "s33",
+    kategorie: "Kosten- & Leistungsrechnung / Controlling",
+    schwierigkeit: "schwer",
+    frage: "Was versteht man unter der Kostenartenrechnung?",
+    optionen: [
+      "Erfassung der Art der Kosten",
+      "Verteilung der Kosten",
+      "Gewinnermittlung",
+      "Steuerberechnung",
+    ],
+    korrekterIndex: 0,
+    erklaerung:
+      "Die Kostenartenrechnung ist die erste Stufe der Kostenrechnung. Sie erfasst, welche Kosten in welcher Höhe angefallen sind — gegliedert nach Kostenarten wie Materialkosten, Personalkosten, Abschreibungen etc.",
+    punkte: 30,
+  },
+  {
+    id: "s34",
+    kategorie: "Kosten- & Leistungsrechnung / Controlling",
+    schwierigkeit: "schwer",
+    frage: "Welche Aufgabe hat die Kostenstellenrechnung?",
+    optionen: [
+      "Kosten verursachungsgerecht Bereichen zuordnen",
+      "Jahresabschluss erstellen",
+      "Kunden werben",
+      "Steuern berechnen",
+    ],
+    korrekterIndex: 0,
+    erklaerung:
+      "Die Kostenstellenrechnung ist die zweite Stufe der Kostenrechnung. Sie verteilt die Gemeinkosten verursachungsgerecht auf die Bereiche (Kostenstellen), in denen sie entstanden sind — z. B. Fertigung, Verwaltung, Vertrieb.",
+    punkte: 30,
+  },
+  {
+    id: "s35",
+    kategorie: "Rechnungswesen & Buchführung",
+    schwierigkeit: "schwer",
+    frage: "Was ist die Eigenkapitalquote?",
+    optionen: [
+      "Eigenkapital im Verhältnis zum Gesamtkapital",
+      "Gewinn pro Mitarbeiter",
+      "Umsatz pro Kunde",
+      "Fremdkapitalquote",
+    ],
+    korrekterIndex: 0,
+    erklaerung:
+      "Die Eigenkapitalquote = Eigenkapital / Gesamtkapital × 100. Sie zeigt, wie hoch der Anteil des Eigenkapitals an der Bilanzsumme ist und ist ein wichtiger Indikator für die finanzielle Stabilität eines Unternehmens.",
+    punkte: 30,
+  },
 ];
