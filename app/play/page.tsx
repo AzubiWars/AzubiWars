@@ -66,7 +66,7 @@ export default function PlayPage() {
   // ── Browser-Mode State ──
   const [mode, setMode] = useState<"browse" | "quiz">("browse");
   const [allQuestions, setAllQuestions] = useState(SAMPLE_QUESTIONS);
-  const [selectedBeruf, setSelectedBeruf] = useState<Ausbildungsberuf>("Industriekaufmann/-frau");
+  const [selectedBeruf, setSelectedBeruf] = useState<string>(""); // "" = alle Berufe
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("gemischt");
   const [selectedKategorie, setSelectedKategorie] = useState<string>("alle");
   const [berufSearch, setBerufSearch] = useState("");
@@ -117,7 +117,7 @@ export default function PlayPage() {
 
     // Gespeicherte Einstellungen laden
     const savedBeruf = localStorage.getItem("beruf");
-    if (savedBeruf) setSelectedBeruf(savedBeruf as Ausbildungsberuf);
+    if (savedBeruf && savedBeruf !== "Industriekaufmann/-frau") setSelectedBeruf(savedBeruf);
     const savedDiff = localStorage.getItem("difficulty");
     if (savedDiff) setSelectedDifficulty(savedDiff);
   }, [user, authLoading, router]);
@@ -126,22 +126,28 @@ export default function PlayPage() {
   const filteredQuestions = useMemo(() => {
     return allQuestions.filter((q) => {
       if (selectedKategorie !== "alle" && q.kategorie !== selectedKategorie) return false;
-      if (selectedBeruf !== "Industriekaufmann/-frau" && q.beruf && q.beruf !== selectedBeruf) return false;
+      if (selectedBeruf && q.beruf && q.beruf !== selectedBeruf) return false;
       return true;
     });
   }, [allQuestions, selectedKategorie, selectedBeruf]);
 
   // ── Kategorie-Stats für Browser ──
   const katStats = useMemo(() => {
-    return KATEGORIEN.map((kat) => ({
-      name: kat,
-      icon: KAT_ICONS[kat] || "📋",
-      count: allQuestions.filter((q) => q.kategorie === kat).length,
-      easy: allQuestions.filter((q) => q.kategorie === kat && q.schwierigkeit === "leicht").length,
-      medium: allQuestions.filter((q) => q.kategorie === kat && q.schwierigkeit === "mittel").length,
-      hard: allQuestions.filter((q) => q.kategorie === kat && q.schwierigkeit === "schwer").length,
-    }));
-  }, [allQuestions]);
+    return KATEGORIEN.map((kat) => {
+      const inKat = allQuestions.filter((q) => q.kategorie === kat);
+      const filtered = selectedBeruf
+        ? inKat.filter((q) => !q.beruf || q.beruf === selectedBeruf)
+        : inKat;
+      return {
+        name: kat,
+        icon: KAT_ICONS[kat] || "📋",
+        count: filtered.length,
+        easy: filtered.filter((q) => q.schwierigkeit === "leicht").length,
+        medium: filtered.filter((q) => q.schwierigkeit === "mittel").length,
+        hard: filtered.filter((q) => q.schwierigkeit === "schwer").length,
+      };
+    });
+  }, [allQuestions, selectedBeruf]);
 
   // ── Quiz starten ──
   const startQuiz = (kategorie?: string) => {
@@ -149,8 +155,10 @@ export default function PlayPage() {
       ? allQuestions.filter((q) => q.kategorie === kategorie)
       : filteredQuestions;
 
-    const byBeruf = pool.filter((q) => !q.beruf || q.beruf === selectedBeruf);
-    const finalPool = byBeruf.length >= 5 ? byBeruf : pool;
+    const byBeruf = selectedBeruf
+      ? pool.filter((q) => !q.beruf || q.beruf === selectedBeruf)
+      : pool;
+    const finalPool = selectedBeruf && byBeruf.length >= 5 ? byBeruf : pool;
 
     const round = buildRound(finalPool, ROUND_SIZE, selectedDifficulty);
     if (round.length === 0) return; // keine Fragen
@@ -270,15 +278,32 @@ export default function PlayPage() {
 
         {/* Beruf Selector */}
         <div className="max-w-sm mx-auto">
-          <input
-            type="text"
-            value={berufSearch}
-            onChange={(e) => { setBerufSearch(e.target.value); if (e.target.value === "") setSelectedBeruf("Industriekaufmann/-frau"); }}
-            placeholder="🔍 Ausbildungsberuf filtern…"
-            className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-[#D6462A]/50 placeholder:text-gray-500 text-center"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={berufSearch}
+              onChange={(e) => setBerufSearch(e.target.value)}
+              placeholder={selectedBeruf || "🔍 Alle Ausbildungsberufe…"}
+              className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-[#D6462A]/50 placeholder:text-gray-500"
+            />
+            {selectedBeruf && (
+              <button
+                onClick={() => { setSelectedBeruf(""); setBerufSearch(""); }}
+                className="shrink-0 text-xs text-gray-500 hover:text-red-400 transition-colors px-2"
+                title="Filter entfernen"
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {berufSearch && (
             <div className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a22]">
+              <button
+                onClick={() => { setSelectedBeruf(""); setBerufSearch(""); }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-white/[0.04] border-b border-white/5"
+              >
+                🌐 Alle Berufe anzeigen
+              </button>
               {AUSBILDUNGSBERUFE.filter((b) => b.toLowerCase().includes(berufSearch.toLowerCase())).slice(0, 15).map((b) => (
                 <button key={b} onClick={() => { setSelectedBeruf(b); setBerufSearch(""); }}
                   className={`w-full text-left px-4 py-2 text-sm ${b === selectedBeruf ? "bg-[#D6462A]/10 text-[#D6462A]" : "text-gray-400 hover:bg-white/[0.04]"}`}>
@@ -286,6 +311,11 @@ export default function PlayPage() {
                 </button>
               ))}
             </div>
+          )}
+          {!berufSearch && (
+            <p className="text-center text-xs text-gray-500 mt-1">
+              {selectedBeruf ? `Gefiltert: ${selectedBeruf}` : 'Alle Berufe — tippe zum Filtern'}
+            </p>
           )}
         </div>
 
@@ -322,7 +352,7 @@ export default function PlayPage() {
         {/* All Questions Quick-Start */}
         <div className="text-center pt-2">
           <p className="text-xs text-gray-500 mb-3">
-            {filteredQuestions.length} Fragen verfügbar · {selectedBeruf} · {
+            {filteredQuestions.length} Fragen verfügbar · {selectedBeruf || "Alle Berufe"} · {
               selectedDifficulty === "gemischt" ? "Progressiv" : selectedDifficulty
             }
           </p>

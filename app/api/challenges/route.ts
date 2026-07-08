@@ -4,22 +4,28 @@ import { type Firestore } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
 
-// GET: Alle User-erstellten Fragen abrufen
+// GET: Alle User-erstellten Fragen abrufen (ohne composite index)
 export async function GET() {
   try {
     const db = getDb();
     const snapshot = await db
       .collection("questions")
       .where("quelle", "==", "user")
-      .orderBy("erstelltAm", "desc")
       .limit(50)
       .get();
 
-    const challenges = snapshot.docs.map((doc) => doc.data());
+    // Client-seitig sortieren (vermeidet composite index)
+    const challenges = snapshot.docs
+      .map((doc) => doc.data())
+      .sort((a, b) => {
+        const dateA = a.erstelltAm ? new Date(a.erstelltAm).getTime() : 0;
+        const dateB = b.erstelltAm ? new Date(b.erstelltAm).getTime() : 0;
+        return dateB - dateA; // neueste zuerst
+      });
+
     return NextResponse.json({ challenges });
   } catch (error) {
     console.error("GET /api/challenges error:", error);
-    // Fallback: leeres Array
     return NextResponse.json({ challenges: [] });
   }
 }
