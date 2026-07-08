@@ -7,6 +7,7 @@ interface CommunityQuestion {
   frage: string;
   kategorie: string;
   schwierigkeit: string;
+  beruf?: string;
   punkte: number;
   authorName: string;
   erstelltAm: string;
@@ -66,6 +67,11 @@ export default function ChallengesPage() {
                       {c.frage}
                     </p>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {c.beruf && (
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-[#D6462A]/10 text-[#D6462A]/70">
+                          {c.beruf}
+                        </span>
+                      )}
                       <span className="text-xs px-2 py-0.5 rounded-md bg-white/10 text-gray-400">
                         {c.kategorie}
                       </span>

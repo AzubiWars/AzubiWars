@@ -244,118 +244,137 @@ export default function PlayPage() {
 
   // ═══════════════════ BROWSER MODE ═══════════════════
   if (mode === "browse") {
+    // Berufe mit verfügbaren Fragen (für Grid)
+    const berufStats = useMemo(() => {
+      const stats: Record<string, number> = {};
+      allQuestions.forEach((q) => {
+        const b = q.beruf || "Ohne Beruf";
+        stats[b] = (stats[b] || 0) + 1;
+      });
+      return Object.entries(stats)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 20);
+    }, [allQuestions]);
+
+    // Community Challenges für selectedBeruf
+    const communityChallenges = useMemo(() => {
+      return allQuestions.filter((q) => q.authorName && (!selectedBeruf || q.beruf === selectedBeruf));
+    }, [allQuestions, selectedBeruf]);
+
     return (
       <div className="animate-slide-up space-y-8">
         {/* Hero */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-100">⚡ Battlen</h1>
           <p className="text-gray-400 text-sm max-w-md mx-auto">
-            Wähle eine Kategorie oder starte direkt eine gemischte Runde mit Fragen aus deinem Ausbildungsberuf.
+            Wähle deinen Ausbildungsberuf, dann eine Kategorie — oder starte direkt durch.
           </p>
         </div>
 
-        {/* Quick Actions Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <button onClick={() => startQuiz()} className="btn-primary text-lg px-8 py-3 w-full sm:w-auto">
-            🎲 Zufällige Runde starten
-          </button>
-          <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1">
-            {(["gemischt", "leicht", "mittel", "schwer"] as const).map((d) => (
+        {/* ── BERUF SEARCH (Prominent) ── */}
+        <div className="max-w-xl mx-auto">
+          <input
+            type="text"
+            value={berufSearch}
+            onChange={(e) => setBerufSearch(e.target.value)}
+            placeholder="🔍 Ausbildungsberuf suchen…"
+            className="w-full rounded-xl border-2 border-white/10 bg-white/[0.03] px-5 py-3 text-base text-gray-100 outline-none focus:border-[#D6462A]/50 focus:ring-2 focus:ring-[#D6462A]/20 placeholder:text-gray-500 text-center"
+            autoFocus
+          />
+          {berufSearch && (
+            <div className="mt-2 max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a22] shadow-xl">
               <button
-                key={d}
-                onClick={() => setSelectedDifficulty(d)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                  selectedDifficulty === d
-                    ? "bg-[#D6462A] text-white shadow-sm"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
-                }`}
+                onClick={() => { setSelectedBeruf(""); setBerufSearch(""); }}
+                className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-white/[0.04] border-b border-white/5 font-medium"
               >
+                🌐 Alle Ausbildungsberufe ({allQuestions.length} Fragen)
+              </button>
+              {AUSBILDUNGSBERUFE.filter((b) => b.toLowerCase().includes(berufSearch.toLowerCase())).slice(0, 20).map((b) => {
+                const count = allQuestions.filter((q) => !q.beruf || q.beruf === b).length;
+                return (
+                  <button key={b} onClick={() => { setSelectedBeruf(b); setBerufSearch(""); }}
+                    className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between ${b === selectedBeruf ? "bg-[#D6462A]/10 text-[#D6462A]" : "text-gray-300 hover:bg-white/[0.04]"}`}>
+                    <span>{b}</span>
+                    <span className="text-xs text-gray-500">{count} Fragen</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {!berufSearch && selectedBeruf && (
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="text-sm text-[#D6462A] font-medium">{selectedBeruf}</span>
+              <button onClick={() => setSelectedBeruf("")} className="text-xs text-gray-500 hover:text-red-400">✕</button>
+            </div>
+          )}
+        </div>
+
+        {/* ── After Beruf selected: Difficulty + Categories + Quick Start ── */}
+        <div className="space-y-6">
+          {/* Difficulty filter */}
+          <div className="flex items-center justify-center gap-1 bg-white/[0.04] rounded-xl p-1 max-w-xs mx-auto">
+            {(["gemischt", "leicht", "mittel", "schwer"] as const).map((d) => (
+              <button key={d} onClick={() => setSelectedDifficulty(d)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                  selectedDifficulty === d ? "bg-[#D6462A] text-white shadow-sm" : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
+                }`}>
                 {d === "gemischt" ? "🎯 Mix" : d === "leicht" ? "🟢 Leicht" : d === "mittel" ? "🟡 Mittel" : "🔴 Schwer"}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Beruf Selector */}
-        <div className="max-w-sm mx-auto">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={berufSearch}
-              onChange={(e) => setBerufSearch(e.target.value)}
-              placeholder={selectedBeruf || "🔍 Alle Ausbildungsberufe…"}
-              className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-[#D6462A]/50 placeholder:text-gray-500"
-            />
-            {selectedBeruf && (
-              <button
-                onClick={() => { setSelectedBeruf(""); setBerufSearch(""); }}
-                className="shrink-0 text-xs text-gray-500 hover:text-red-400 transition-colors px-2"
-                title="Filter entfernen"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          {berufSearch && (
-            <div className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a22]">
-              <button
-                onClick={() => { setSelectedBeruf(""); setBerufSearch(""); }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-white/[0.04] border-b border-white/5"
-              >
-                🌐 Alle Berufe anzeigen
-              </button>
-              {AUSBILDUNGSBERUFE.filter((b) => b.toLowerCase().includes(berufSearch.toLowerCase())).slice(0, 15).map((b) => (
-                <button key={b} onClick={() => { setSelectedBeruf(b); setBerufSearch(""); }}
-                  className={`w-full text-left px-4 py-2 text-sm ${b === selectedBeruf ? "bg-[#D6462A]/10 text-[#D6462A]" : "text-gray-400 hover:bg-white/[0.04]"}`}>
-                  {b}
-                </button>
-              ))}
-            </div>
-          )}
-          {!berufSearch && (
-            <p className="text-center text-xs text-gray-500 mt-1">
-              {selectedBeruf ? `Gefiltert: ${selectedBeruf}` : 'Alle Berufe — tippe zum Filtern'}
+          {/* Quick Start */}
+          <div className="text-center">
+            <button onClick={() => startQuiz()} className="btn-primary text-lg px-10 py-3">
+              🎲 {selectedBeruf ? `${selectedBeruf.slice(0, 30)} — Los!` : "Zufällige Runde starten"}
+            </button>
+            <p className="text-xs text-gray-500 mt-2">
+              {filteredQuestions.length} Fragen verfügbar · {selectedDifficulty === "gemischt" ? "Progressiv" : selectedDifficulty}
             </p>
-          )}
-        </div>
+          </div>
 
-        {/* Category Grid */}
-        <div>
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Kategorien</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {katStats.map((kat) => (
-              <button
-                key={kat.name}
-                onClick={() => startQuiz(kat.name)}
-                className="card p-4 text-left hover:bg-white/[0.06] transition-all group flex items-center gap-4"
-              >
-                <span className="text-2xl">{kat.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-200 group-hover:text-gray-100 truncate">
-                    {kat.name}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[11px] text-gray-500">{kat.count} Fragen</span>
-                    <span className="flex gap-1">
+          {/* Category Grid */}
+          <div>
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              {selectedBeruf ? `Kategorien für ${selectedBeruf}` : "Alle Kategorien"}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {katStats.filter((k) => k.count > 0).map((kat) => (
+                <button key={kat.name} onClick={() => startQuiz(kat.name)}
+                  className="card p-4 text-left hover:bg-white/[0.06] transition-all group flex items-center gap-4">
+                  <span className="text-2xl">{kat.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-200 group-hover:text-gray-100 truncate">{kat.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] text-gray-500">{kat.count} Fragen</span>
                       {kat.easy > 0 && <span className="text-[10px] px-1 rounded bg-green-500/10 text-green-500">{kat.easy}🟢</span>}
                       {kat.medium > 0 && <span className="text-[10px] px-1 rounded bg-yellow-500/10 text-yellow-500">{kat.medium}🟡</span>}
                       {kat.hard > 0 && <span className="text-[10px] px-1 rounded bg-red-500/10 text-red-500">{kat.hard}🔴</span>}
-                    </span>
+                    </div>
                   </div>
-                </div>
-                <span className="text-gray-500 group-hover:text-gray-300 transition-colors text-lg">→</span>
-              </button>
-            ))}
+                  <span className="text-gray-500 group-hover:text-gray-300 transition-colors text-lg">→</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* All Questions Quick-Start */}
-        <div className="text-center pt-2">
-          <p className="text-xs text-gray-500 mb-3">
-            {filteredQuestions.length} Fragen verfügbar · {selectedBeruf || "Alle Berufe"} · {
-              selectedDifficulty === "gemischt" ? "Progressiv" : selectedDifficulty
-            }
-          </p>
+          {/* Community Challenges for this Beruf */}
+          {communityChallenges.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                🛠️ Community-Challenges {selectedBeruf && `für ${selectedBeruf}`}
+              </h2>
+              <div className="space-y-1">
+                {communityChallenges.slice(0, 5).map((q) => (
+                  <div key={q.id} className="card p-3 flex items-center gap-3 text-sm">
+                    <span className="text-xs text-gray-500 w-6">{q.schwierigkeit === "leicht" ? "🟢" : q.schwierigkeit === "mittel" ? "🟡" : "🔴"}</span>
+                    <span className="flex-1 text-gray-300 truncate">{q.frage}</span>
+                    <span className="text-xs text-[#D6462A]/70">{q.authorName}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
