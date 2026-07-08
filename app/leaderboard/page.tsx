@@ -41,14 +41,13 @@ export default function LeaderboardPage() {
       })
       .catch(() => {
         setLoading(false);
-        // Fallback: keine Firestore-Daten → lokale Stats werden gezeigt
       });
   }, []);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-gray-400">Lade Leaderboard…</p>
+        <p className="text-gray-500">Lade Leaderboard…</p>
       </div>
     );
   }
@@ -56,22 +55,24 @@ export default function LeaderboardPage() {
   return (
     <div className="mx-auto max-w-2xl animate-slide-up space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-gray-100">🏆 Leaderboard</h1>
-        <p className="mt-1 text-gray-500">
-          {usingFirestore ? "Die besten Azubis auf einen Blick" : "Deine persönlichen Stats"}
+        <h1 className="text-2xl font-bold text-gray-300">🏆 Leaderboard</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          {usingFirestore ? "Die besten Azubis" : "Deine Stats"}
         </p>
       </div>
 
       {/* Firestore Leaderboard */}
       {usingFirestore && players.length > 0 && (
-        <div className="space-y-1">
-          <div className="flex items-center gap-3 rounded-xl bg-gray-100 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-            <span className="w-10 text-center">#</span>
+        <div className="space-y-0.5">
+          {/* Table Header */}
+          <div className="flex items-center gap-3 rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <span className="w-8 text-center">#</span>
             <span className="flex-1">Spieler</span>
-            <span className="w-20 text-center">Rang</span>
-            <span className="w-20 text-right">XP</span>
-            <span className="w-16 text-right">Quote</span>
+            <span className="w-14 text-center">Rang</span>
+            <span className="w-16 text-right">XP</span>
+            <span className="w-12 text-right">Quote</span>
           </div>
+
           {players.map((player, index) => {
             const rang = getRang(player.xpGesamt);
             const isMe = player.id === myPlayerId || player.nickname === myNickname;
@@ -79,28 +80,50 @@ export default function LeaderboardPage() {
               player.beantwortet > 0
                 ? Math.round((player.richtig / player.beantwortet) * 100)
                 : 0;
+            const top3 = index < 3;
 
             return (
               <div
                 key={player.id}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${
-                  isMe ? "bg-[#D6462A]/10 ring-2 ring-[#D6462A]/30" : "bg-white/5 hover:bg-white/10"
+                className={`flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors ${
+                  isMe
+                    ? "bg-[#D6462A]/10 ring-1 ring-[#D6462A]/20"
+                    : top3
+                      ? "bg-white/[0.03]"
+                      : "hover:bg-white/[0.02]"
                 }`}
               >
-                <span className="w-10 text-center font-bold text-sm">
-                  {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`}
+                {/* Rank */}
+                <span className={`w-8 text-center text-sm font-semibold ${
+                  top3 ? "text-gray-200" : "text-gray-500"
+                }`}>
+                  {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`}
                 </span>
-                <span className={`flex-1 font-semibold ${isMe ? "text-[#D6462A]" : "text-gray-100"}`}>
+
+                {/* Name */}
+                <span className={`flex-1 text-sm font-medium truncate ${
+                  isMe ? "text-[#D6462A]" : "text-gray-300"
+                }`}>
                   {player.nickname}
-                  {isMe && <span className="ml-2 text-xs text-[#D6462A]">(Du)</span>}
+                  {isMe && <span className="ml-1.5 text-xs text-[#D6462A]/70">(Du)</span>}
                 </span>
-                <span className="w-20 text-center text-sm">{rang.emoji}</span>
-                <span className="w-20 text-right font-bold text-[#D6462A] text-sm">
+
+                {/* Rang Emoji */}
+                <span className="w-14 text-center text-sm" title={rang.name}>
+                  {rang.emoji}
+                </span>
+
+                {/* XP */}
+                <span className={`w-16 text-right text-sm font-semibold ${
+                  isMe ? "text-[#D6462A]" : "text-gray-400"
+                }`}>
                   {player.xpGesamt.toLocaleString()}
                 </span>
+
+                {/* Quote */}
                 <span
-                  className={`w-16 text-right text-xs font-medium ${
-                    quote >= 70 ? "text-green-600" : quote >= 40 ? "text-yellow-600" : "text-gray-400"
+                  className={`w-12 text-right text-xs font-medium ${
+                    quote >= 70 ? "text-green-500" : quote >= 40 ? "text-yellow-500" : "text-gray-500"
                   }`}
                 >
                   {quote}%
@@ -111,36 +134,53 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Eigene Stats (immer sichtbar) */}
+      {/* Keine Daten */}
+      {!myNickname && !usingFirestore && (
+        <div className="card text-center py-12 border-dashed">
+          <div className="text-4xl mb-3 opacity-50">👻</div>
+          <p className="text-gray-500 text-sm">Noch kein Spieler.</p>
+          <a href="/" className="btn-primary mt-4 inline-block text-sm">🚀 Jetzt starten</a>
+        </div>
+      )}
+
+      {/* Persönliche Stats Card */}
       {myNickname && (
-        <div className="card">
-          <div className="flex items-center gap-4 mb-4">
-            <span className="text-4xl">{getRang(myXp).emoji}</span>
-            <div>
-              <h2 className="text-xl font-bold text-gray-100">{myNickname}</h2>
-              <p className="text-sm text-[#D6462A] font-semibold">{getRang(myXp).name}</p>
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-3xl">{getRang(myXp).emoji}</span>
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-gray-300 truncate">{myNickname}</h2>
+              <p className="text-xs text-[#D6462A]/80">{getRang(myXp).name}</p>
             </div>
-            <div className="ml-auto text-right">
-              <div className="text-2xl font-extrabold text-[#D6462A]">{myXp}</div>
-              <div className="text-xs text-gray-400">Gesamt-XP</div>
+            <div className="ml-auto text-right shrink-0">
+              <div className="text-xl font-bold text-gray-400">{myXp}</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gesamt-XP</div>
             </div>
           </div>
 
-          {/* Rang-Leiste */}
-          <div className="space-y-1">
+          {/* Rang Progress */}
+          <div className="space-y-0.5">
             {RANKS.map((rank, i) => {
-              const isCurrent = getRang(myXp).index === i;
+              const currentIdx = getRang(myXp).index;
+              const isCurrent = currentIdx === i;
               const isUnlocked = myXp >= rank.minXp;
               return (
                 <div
                   key={rank.name}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${
-                    isCurrent ? "bg-[#D6462A]/10 font-bold" : isUnlocked ? "text-gray-600" : "text-gray-300"
+                  className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
+                    isCurrent
+                      ? "bg-[#D6462A]/10 text-gray-200 font-medium"
+                      : isUnlocked
+                        ? "text-gray-500"
+                        : "text-gray-600"
                   }`}
                 >
-                  <span>{rank.emoji}</span>
+                  <span className="w-5 text-center">{rank.emoji}</span>
                   <span className="flex-1">{rank.name}</span>
-                  <span className="text-xs">{isUnlocked ? "✅" : `${rank.minXp} XP`}</span>
+                  <span className="tabular-nums">
+                    {isUnlocked ? "✅" : `${rank.minXp} XP`}
+                  </span>
                 </div>
               );
             })}
@@ -148,18 +188,17 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {!myNickname && !usingFirestore && (
-        <div className="card text-center py-12">
-          <div className="text-5xl mb-4">👻</div>
-          <p className="text-gray-500">Noch kein Spieler. Starte deine erste Runde!</p>
-          <a href="/" className="btn-primary mt-4 inline-block">🚀 Jetzt starten</a>
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-3 justify-center">
-        <a href="/play" className="btn-primary">🔄 Neue Runde</a>
-        <a href="/" className="btn-secondary">🏠 Startseite</a>
+      {/* Actions */}
+      <div className="flex gap-2 justify-center">
+        <a href="/play" className="btn-primary text-sm px-5 py-2.5">🔄 Neue Runde</a>
+        <a href="/" className="btn-secondary text-sm px-5 py-2.5">🏠 Startseite</a>
       </div>
+
+      {!usingFirestore && myNickname && (
+        <p className="text-center text-[11px] text-gray-600">
+          Sobald Firestore konfiguriert ist, erscheint hier die globale Rangliste.
+        </p>
+      )}
     </div>
   );
 }
