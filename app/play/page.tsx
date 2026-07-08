@@ -71,10 +71,7 @@ export default function PlayPage() {
   const questions = useMemo(() => {
     const diff = typeof window !== "undefined" ? localStorage.getItem("difficulty") ?? "gemischt" : "gemischt";
     const beruf = typeof window !== "undefined" ? localStorage.getItem("beruf") ?? "Industriekaufmann/-frau" : "Industriekaufmann/-frau";
-    const byBeruf = allQuestions.filter((q) => {
-      const qBeruf = (q as Record<string, unknown>).beruf;
-      return !qBeruf || qBeruf === beruf;
-    });
+    const byBeruf = allQuestions.filter((q) => !q.beruf || q.beruf === beruf);
     const pool = byBeruf.length >= 5 ? byBeruf : allQuestions;
     return buildRound(pool, ROUND_SIZE, diff);
   }, [allQuestions]);

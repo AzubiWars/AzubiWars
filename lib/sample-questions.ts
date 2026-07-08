@@ -8,6 +8,7 @@ export interface SampleQuestion {
   erklaerung: string;
   punkte: number;
   authorName?: string;
+  beruf?: string;
 }
 
 export const SAMPLE_QUESTIONS: SampleQuestion[] = [
