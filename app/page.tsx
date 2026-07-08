@@ -211,80 +211,78 @@ export default function LandingPage() {
           </button>
         </div>
       ) : (
-        /* ── Auto-Login Card ── */
-      {savedPlayer && !showNewPlayer ? (
-        <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
-          <div>
-            <div className="text-5xl mb-2">👋</div>
-            <h2 className="text-xl font-bold text-gray-100">Willkommen zurück!</h2>
-            <p className="text-gray-400 mt-1">
-              <span className="font-semibold text-[#D6462A]">{savedPlayer.nickname}</span>
-              {" · "}
-              <span className="text-gray-300">{savedPlayer.xp} XP</span>
-            </p>
-          </div>
-
-          <button onClick={handleContinue} className="btn-primary w-full text-lg">
-            ⚔️ Weiterspielen
-          </button>
-
-          <div className="flex gap-2 justify-center">
-            <button
-              onClick={() => setShowNewPlayer(true)}
-              className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-            >
-              Neuer Spieler?
-            </button>
-            <span className="text-gray-600">·</span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-gray-400 hover:text-red-400 transition-colors"
-            >
-              Abmelden
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* ── Login / New Player Card ── */
-        <div className="card w-full max-w-md animate-bounce-in">
-          {savedPlayer && (
-            <button
-              onClick={() => setShowNewPlayer(false)}
-              className="mb-3 text-sm text-gray-400 hover:text-gray-200 transition-colors"
-            >
-              ← Zurück zu {savedPlayer.nickname}
-            </button>
+        <>
+          {savedPlayer && !showNewPlayer ? (
+            <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
+              <div>
+                <div className="text-5xl mb-2">👋</div>
+                <h2 className="text-xl font-bold text-gray-100">Willkommen zurück!</h2>
+                <p className="text-gray-400 mt-1">
+                  <span className="font-semibold text-[#D6462A]">{savedPlayer.nickname}</span>
+                  {" · "}
+                  <span className="text-gray-300">{savedPlayer.xp} XP</span>
+                </p>
+              </div>
+              <button onClick={handleContinue} className="btn-primary w-full text-lg">
+                ⚔️ Weiterspielen
+              </button>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => setShowNewPlayer(true)}
+                  className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  Neuer Spieler?
+                </button>
+                <span className="text-gray-600">·</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  Abmelden
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="card w-full max-w-md animate-bounce-in">
+              {savedPlayer && (
+                <button
+                  onClick={() => setShowNewPlayer(false)}
+                  className="mb-3 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  ← Zurück zu {savedPlayer.nickname}
+                </button>
+              )}
+              <label htmlFor="nickname" className="mb-2 block font-semibold text-gray-200">
+                {savedPlayer ? "Neuer Nickname" : "Dein Nickname"}
+              </label>
+              <input
+                id="nickname"
+                type="text"
+                value={nickname}
+                onChange={(e) => {
+                  setNickname(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) => e.key === "Enter" && handleNewPlayer()}
+                placeholder="z. B. AzubiPro99"
+                maxLength={20}
+                className="mb-3 w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-3 text-lg font-medium text-gray-100 outline-none transition-all duration-200 focus:border-[#D6462A] focus:ring-2 focus:ring-[#D6462A]/20 placeholder:text-gray-500"
+                autoFocus
+              />
+              {error && (
+                <p className="mb-3 text-sm font-medium text-red-400" role="alert">
+                  {error}
+                </p>
+              )}
+              <button onClick={handleNewPlayer} disabled={loading} className="btn-primary w-full text-lg">
+                {loading ? "Starte…" : "🚀 Los geht's!"}
+              </button>
+              <p className="mt-3 text-center text-xs text-gray-500">
+                Industriekaufmann/-frau · IHK-Prüfungsniveau
+              </p>
+            </div>
           )}
-
-          <label htmlFor="nickname" className="mb-2 block font-semibold text-gray-200">
-            {savedPlayer ? "Neuer Nickname" : "Dein Nickname"}
-          </label>
-          <input
-            id="nickname"
-            type="text"
-            value={nickname}
-            onChange={(e) => {
-              setNickname(e.target.value);
-              setError("");
-            }}
-            onKeyDown={(e) => e.key === "Enter" && handleNewPlayer()}
-            placeholder="z. B. AzubiPro99"
-            maxLength={20}
-            className="mb-3 w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-3 text-lg font-medium text-gray-100 outline-none transition-all duration-200 focus:border-[#D6462A] focus:ring-2 focus:ring-[#D6462A]/20 placeholder:text-gray-500"
-            autoFocus
-          />
-          {error && (
-            <p className="mb-3 text-sm font-medium text-red-400" role="alert">
-              {error}
-            </p>
-          )}
-          <button onClick={handleNewPlayer} disabled={loading} className="btn-primary w-full text-lg">
-            {loading ? "Starte…" : "🚀 Los geht's!"}
-          </button>
-          <p className="mt-3 text-center text-xs text-gray-500">
-            Industriekaufmann/-frau · IHK-Prüfungsniveau
-          </p>
-        </div>
+        </>
       )}
     </div>
   );
