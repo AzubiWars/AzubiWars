@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-brand: #2563eb;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-white p-6 shadow-lg ring-1 ring-gray-100;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-[0.98];
+  }
+
+  .option-btn {
+    @apply w-full rounded-xl border-2 border-gray-200 p-4 text-left font-medium transition-all duration-200 hover:border-brand-400 hover:bg-brand-50 active:scale-[0.98];
+  }
+
+  .option-btn-selected {
+    @apply border-brand-500 bg-brand-50;
+  }
+
+  .option-btn-correct {
+    @apply border-green-500 bg-green-50;
+  }
+
+  .option-btn-wrong {
+    @apply border-red-500 bg-red-50;
+  }
+
+  .option-btn-disabled {
+    @apply opacity-60 cursor-not-allowed;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

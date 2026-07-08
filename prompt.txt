@@ -1,0 +1,1 @@
+Für das projct verwende Bitte folgenden tech-stack React mit next.js als backend die Firestore @firestore.txt, deployment ist vercel das geht automatisch. hier ist die projekt idee=
