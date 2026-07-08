@@ -14,21 +14,22 @@ export async function GET(request: NextRequest) {
     const playerId = searchParams.get("id");
 
     if (playerId) {
-      const player = await getPlayerById(playerId);
-      if (!player) {
-        return NextResponse.json({ error: "Spieler nicht gefunden." }, { status: 404 });
+      try {
+        const player = await getPlayerById(playerId);
+        if (!player) {
+          return NextResponse.json({ error: "Spieler nicht gefunden." }, { status: 404 });
+        }
+        return NextResponse.json(player);
+      } catch {
+        return NextResponse.json({ error: "Datenbank nicht verfügbar" }, { status: 200 });
       }
-      return NextResponse.json(player);
     }
 
     const players = await getLeaderboard();
     return NextResponse.json({ players });
   } catch (error) {
     console.error("GET /api/players error:", error);
-    return NextResponse.json(
-      { error: "Spieler-Daten konnten nicht geladen werden." },
-      { status: 500 }
-    );
+    return NextResponse.json({ players: [] });
   }
 }
 
@@ -48,9 +49,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(player, { status: 201 });
   } catch (error) {
     console.error("POST /api/players error:", error);
+    // Player creation failed (Firestore not available) → return a local-play compatible response
     return NextResponse.json(
-      { error: "Spieler konnte nicht erstellt werden." },
-      { status: 500 }
+      { id: "local", nickname: "local", xpGesamt: 0, beantwortet: 0, richtig: 0, besteStreak: 0 },
+      { status: 201 }
     );
   }
 }
@@ -62,7 +64,7 @@ export async function PATCH(request: NextRequest) {
 
     if (!playerId || typeof xpGained !== "number" || typeof wasCorrect !== "boolean") {
       return NextResponse.json(
-        { error: "Ungültige Daten: playerId, xpGained (number), wasCorrect (boolean) benötigt." },
+        { error: "playerId, xpGained (number), wasCorrect (boolean) benötigt." },
         { status: 400 }
       );
     }
@@ -71,9 +73,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(player);
   } catch (error) {
     console.error("PATCH /api/players error:", error);
-    return NextResponse.json(
-      { error: "Spieler-Stats konnten nicht aktualisiert werden." },
-      { status: 500 }
-    );
+    // Silently accept — client uses localStorage as source of truth
+    return NextResponse.json({ ok: true });
   }
 }

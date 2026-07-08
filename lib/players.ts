@@ -78,14 +78,18 @@ export async function updatePlayerStats(
 }
 
 export async function getLeaderboard(limit = 50): Promise<Player[]> {
-  const db = getDb();
-  const snapshot = await db
-    .collection(COLLECTION)
-    .orderBy("xpGesamt", "desc")
-    .limit(limit)
-    .get();
-
-  return snapshot.docs.map((doc) => doc.data() as Player);
+  try {
+    const db = getDb();
+    const snapshot = await db
+      .collection(COLLECTION)
+      .orderBy("xpGesamt", "desc")
+      .limit(limit)
+      .get();
+    return snapshot.docs.map((doc) => doc.data() as Player);
+  } catch (error) {
+    console.error("getLeaderboard error:", error);
+    return []; // Firestore nicht verfügbar → leere Liste
+  }
 }
 
 export async function getPlayerById(playerId: string): Promise<Player | null> {
