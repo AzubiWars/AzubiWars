@@ -15,21 +15,27 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="flex items-center gap-4 text-sm font-medium text-gray-400">
+    <nav className="flex items-center gap-3 text-sm font-medium text-gray-400">
       {nickname && (
-        <span className="text-gray-500 text-xs hidden sm:inline">
+        <span className="text-gray-500 text-xs hidden md:inline max-w-24 truncate">
           {nickname}
         </span>
       )}
+      <a href="/challenges" className="hover:text-[#D6462A] transition-colors hidden sm:inline">
+        📋 Community
+      </a>
+      <a href="/erstellen" className="hover:text-[#D6462A] transition-colors">
+        🛠️ Erstellen
+      </a>
       <a href="/leaderboard" className="hover:text-[#D6462A] transition-colors">
-        🏆 Leaderboard
+        🏆 Rangliste
       </a>
       {nickname && (
         <button
           onClick={handleLogout}
           className="hover:text-red-400 transition-colors text-xs"
         >
-          🚪 Abmelden
+          🚪
         </button>
       )}
     </nav>
