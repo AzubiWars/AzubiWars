@@ -57,15 +57,15 @@
   }
 
   .option-btn-correct {
-    @apply border-green-500/50 bg-green-500/10;
+    @apply border-green-500/50 bg-green-500/10 hover:border-[#D6462A]/50 hover:bg-[#D6462A]/10;
   }
 
   .option-btn-wrong {
-    @apply border-red-500/50 bg-red-500/10;
+    @apply border-red-500/50 bg-red-500/10 hover:border-[#D6462A]/50 hover:bg-[#D6462A]/10;
   }
 
   .option-btn-disabled {
-    @apply opacity-60 cursor-not-allowed;
+    @apply opacity-60 cursor-not-allowed hover:border-[#D6462A]/50 hover:bg-[#D6462A]/10;
   }
 }
 

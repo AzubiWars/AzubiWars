@@ -110,7 +110,7 @@ export default function AdminPage() {
             onChange={(e) => setAnzahl(Number(e.target.value))}
             className="w-full"
           />
-          <div className="text-center text-sm font-bold text-brand-600">{anzahl}</div>
+          <div className="text-center text-sm font-bold text-[#D6462A]">{anzahl}</div>
         </div>
 
         {/* Generate Button */}

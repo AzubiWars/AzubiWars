@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
               <div
                 key={player.id}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${
-                  isMe ? "bg-brand-50 ring-2 ring-[#D6462A]/30" : "bg-white hover:bg-gray-50"
+                  isMe ? "bg-[#D6462A]/10 ring-2 ring-[#D6462A]/30" : "bg-white/5 hover:bg-white/10"
                 }`}
               >
                 <span className="w-10 text-center font-bold text-sm">
@@ -92,10 +92,10 @@ export default function LeaderboardPage() {
                 </span>
                 <span className={`flex-1 font-semibold ${isMe ? "text-[#D6462A]" : "text-gray-100"}`}>
                   {player.nickname}
-                  {isMe && <span className="ml-2 text-xs text-brand-500">(Du)</span>}
+                  {isMe && <span className="ml-2 text-xs text-[#D6462A]">(Du)</span>}
                 </span>
                 <span className="w-20 text-center text-sm">{rang.emoji}</span>
-                <span className="w-20 text-right font-bold text-brand-600 text-sm">
+                <span className="w-20 text-right font-bold text-[#D6462A] text-sm">
                   {player.xpGesamt.toLocaleString()}
                 </span>
                 <span
@@ -118,10 +118,10 @@ export default function LeaderboardPage() {
             <span className="text-4xl">{getRang(myXp).emoji}</span>
             <div>
               <h2 className="text-xl font-bold text-gray-100">{myNickname}</h2>
-              <p className="text-sm text-brand-600 font-semibold">{getRang(myXp).name}</p>
+              <p className="text-sm text-[#D6462A] font-semibold">{getRang(myXp).name}</p>
             </div>
             <div className="ml-auto text-right">
-              <div className="text-2xl font-extrabold text-brand-600">{myXp}</div>
+              <div className="text-2xl font-extrabold text-[#D6462A]">{myXp}</div>
               <div className="text-xs text-gray-400">Gesamt-XP</div>
             </div>
           </div>

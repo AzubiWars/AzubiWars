@@ -207,14 +207,14 @@ export default function PlayPage() {
           <span className="text-xs px-2 py-0.5 rounded-full bg-white/10">{difficultyPhase}</span>
           <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-[#D6462A] to-[#e85d3f] transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/20 px-3 py-1 text-sm font-semibold text-brand-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#D6462A]/20 px-3 py-1 text-sm font-semibold text-[#e85d3f]">
             ⭐ {totalXp} XP
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-gray-300">
@@ -265,12 +265,12 @@ export default function PlayPage() {
           {currentQuestion.optionen.map((option, idx) => {
             const isEliminated = eliminatedOptions.includes(idx);
 
-            let btnClass = "option-btn border-white/10 text-gray-200 hover:border-brand-400/50 hover:bg-brand-500/10";
+            let btnClass = "option-btn text-gray-200";
             if (isAnswered) {
               if (idx === currentQuestion.korrekterIndex) {
-                btnClass = "option-btn option-btn-correct border-green-500/50 bg-green-500/10 text-green-300";
+                btnClass = "option-btn option-btn-correct text-green-300";
               } else if (idx === selectedIndex && idx !== currentQuestion.korrekterIndex) {
-                btnClass = "option-btn option-btn-wrong border-red-500/50 bg-red-500/10 text-red-300";
+                btnClass = "option-btn option-btn-wrong text-red-300";
               } else {
                 btnClass = "option-btn option-btn-disabled opacity-40";
               }
@@ -349,7 +349,7 @@ export default function PlayPage() {
         )}
 
         {isAnswered && (
-          <button onClick={handleNext} className="btn-primary w-full text-lg animate-slide-up bg-brand-600 hover:bg-brand-500">
+          <button onClick={handleNext} className="btn-primary w-full text-lg animate-slide-up bg-[#D6462A] hover:bg-[#c13d24]">
             {currentIndex + 1 >= questions.length ? "🏁 Ergebnis anzeigen" : "👉 Weiter"}
           </button>
         )}
