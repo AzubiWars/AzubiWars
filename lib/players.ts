@@ -51,14 +51,28 @@ export async function getOrCreatePlayer(nickname: string, playerId?: string): Pr
 export async function updatePlayerStats(
   playerId: string,
   xpGained: number,
-  wasCorrect: boolean
+  wasCorrect: boolean,
+  nickname?: string
 ): Promise<Player> {
   const db = getDb();
   const ref = db.collection(COLLECTION).doc(playerId);
   const doc = await ref.get();
 
+  // Upsert: Spieler existiert nicht → neu anlegen
   if (!doc.exists) {
-    throw new Error(`Spieler ${playerId} nicht gefunden.`);
+    const name = nickname || "Azubi";
+    const newPlayer: Player = {
+      id: playerId,
+      nickname: name,
+      xpGesamt: xpGained,
+      beantwortet: 1,
+      richtig: wasCorrect ? 1 : 0,
+      aktuelleStreak: wasCorrect ? 1 : 0,
+      besteStreak: wasCorrect ? 1 : 0,
+      zuletztAktiv: new Date().toISOString(),
+    };
+    await ref.set(newPlayer);
+    return newPlayer;
   }
 
   const player = doc.data() as Player;

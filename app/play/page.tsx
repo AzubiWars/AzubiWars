@@ -196,7 +196,12 @@ export default function PlayPage() {
         fetch("/api/players", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ playerId: user.uid, xpGained: roundXp, wasCorrect: roundCorrect > 0 }),
+          body: JSON.stringify({
+            playerId: user.uid,
+            xpGained: roundXp,
+            wasCorrect: roundCorrect > 0,
+            nickname: localStorage.getItem("nickname") || user.email?.split("@")[0] || "Azubi",
+          }),
         }).catch(() => {});
       }
 

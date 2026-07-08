@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const player = await updatePlayerStats(playerId, xpGained, wasCorrect);
+    const player = await updatePlayerStats(playerId, xpGained, wasCorrect, body.nickname);
     return NextResponse.json(player);
   } catch (error) {
     console.error("PATCH /api/players error:", error);
