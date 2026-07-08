@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SAMPLE_QUESTIONS, type SampleQuestion } from "@/lib/sample-questions";
 import { getRang } from "@/lib/ranks";
+import { useAuth } from "@/lib/auth-context";
 
 const ROUND_SIZE = 10;
 
@@ -61,6 +62,7 @@ function getStorageNumber(key: string, fallback = 0): number {
 
 export default function PlayPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const [allQuestions, setAllQuestions] = useState(SAMPLE_QUESTIONS);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
@@ -107,11 +109,11 @@ export default function PlayPage() {
   const [hintUsed, setHintUsed] = useState(false);
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]); // per 50:50 ausgeblendet
 
-  // ── Beim Laden: Player check + XP vom Server syncen ──
+  // ── Beim Laden: Auth check + XP vom Server syncen ──
   useEffect(() => {
-    const playerId = localStorage.getItem("playerId");
-    if (!playerId) {
-      router.replace("/");
+    if (authLoading) return;
+    if (!user) {
+      router.replace("/login");
       return;
     }
 
@@ -120,7 +122,7 @@ export default function PlayPage() {
     setTotalXpFromStorage(localXp);
 
     // Vom Server aktuelle XP laden (Firestore)
-    fetch(`/api/players?id=${playerId}`)
+    fetch(`/api/players?id=${user.uid}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.xpGesamt !== undefined && data.xpGesamt > localXp) {
@@ -129,7 +131,7 @@ export default function PlayPage() {
         }
       })
       .catch(() => { /* Offline → lokale XP nutzen */ });
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const currentQuestion = questions[currentIndex];
   const progress = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
@@ -187,12 +189,11 @@ export default function PlayPage() {
       localStorage.setItem("bestStreak", String(Math.max(prevBestStreak, streak)));
 
       // Sync mit Firestore
-      const playerId = localStorage.getItem("playerId");
-      if (playerId) {
+      if (user) {
         fetch("/api/players", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ playerId, xpGained: roundXp, wasCorrect: roundCorrect > 0 }),
+          body: JSON.stringify({ playerId: user.uid, xpGained: roundXp, wasCorrect: roundCorrect > 0 }),
         }).catch(() => {});
       }
 

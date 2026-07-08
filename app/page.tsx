@@ -2,82 +2,45 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+
+const DIFFICULTIES = [
+  { value: "gemischt", label: "🎯 Gemischt", desc: "Leicht → Schwer (progressiv)", color: "border-white/20 hover:border-[#D6462A]/50" },
+  { value: "leicht", label: "🟢 Leicht", desc: "Nur leichte Fragen (10 XP)", color: "border-green-500/30 hover:border-green-500/60" },
+  { value: "mittel", label: "🟡 Mittel", desc: "Nur mittlere Fragen (20 XP)", color: "border-yellow-500/30 hover:border-yellow-500/60" },
+  { value: "schwer", label: "🔴 Schwer", desc: "Nur schwere Fragen (30 XP)", color: "border-red-500/30 hover:border-red-500/60" },
+] as const;
+
+type Difficulty = (typeof DIFFICULTIES)[number]["value"];
 
 export default function LandingPage() {
   const router = useRouter();
-  const [nickname, setNickname] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [savedPlayer, setSavedPlayer] = useState<{
-    nickname: string;
-    playerId: string;
-    xp: number;
-  } | null>(null);
-  const [showNewPlayer, setShowNewPlayer] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const [difficulty, setDifficulty] = useState<Difficulty>("gemischt");
+  const [showDifficulty, setShowDifficulty] = useState(false);
+  const [loadingXp, setLoadingXp] = useState(true);
 
-  // Beim Laden: localStorage checken → Auto-Login anbieten
+  // XP vom Server laden
   useEffect(() => {
-    const storedNick = localStorage.getItem("nickname");
-    const storedId = localStorage.getItem("playerId");
-    const storedXp = localStorage.getItem("totalXp");
-
-    if (storedNick && storedId) {
-      // Auch Firestore checken für aktuellste XP
-      fetch(`/api/players?id=${storedId}`)
+    if (user) {
+      fetch(`/api/players?id=${user.uid}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.xpGesamt !== undefined) {
             localStorage.setItem("totalXp", String(data.xpGesamt));
-            setSavedPlayer({
-              nickname: data.nickname || storedNick,
-              playerId: storedId,
-              xp: data.xpGesamt,
-            });
-          } else {
-            setSavedPlayer({
-              nickname: storedNick,
-              playerId: storedId,
-              xp: parseInt(storedXp ?? "0", 10),
-            });
           }
+          if (data.nickname) {
+            localStorage.setItem("nickname", data.nickname);
+          }
+          setLoadingXp(false);
         })
-        .catch(() => {
-          setSavedPlayer({
-            nickname: storedNick,
-            playerId: storedId,
-            xp: parseInt(storedXp ?? "0", 10),
-          });
-        });
+        .catch(() => setLoadingXp(false));
+    } else if (!authLoading) {
+      setLoadingXp(false);
     }
-  }, []);
+  }, [user, authLoading]);
 
-  const DIFFICULTIES = [
-    { value: "gemischt", label: "🎯 Gemischt", desc: "Leicht → Schwer (progressiv)", color: "border-white/20 hover:border-[#D6462A]/50" },
-    { value: "leicht", label: "🟢 Leicht", desc: "Nur leichte Fragen (10 XP)", color: "border-green-500/30 hover:border-green-500/60" },
-    { value: "mittel", label: "🟡 Mittel", desc: "Nur mittlere Fragen (20 XP)", color: "border-yellow-500/30 hover:border-yellow-500/60" },
-    { value: "schwer", label: "🔴 Schwer", desc: "Nur schwere Fragen (30 XP)", color: "border-red-500/30 hover:border-red-500/60" },
-  ] as const;
-
-  type Difficulty = (typeof DIFFICULTIES)[number]["value"];
-  const [difficulty, setDifficulty] = useState<Difficulty>("gemischt");
-  const [showDifficulty, setShowDifficulty] = useState(false);
-  const [pendingNick, setPendingNick] = useState("");
-  const [pendingId, setPendingId] = useState("");
-
-  const startGame = (nick: string, id: string) => {
-    setPendingNick(nick);
-    setPendingId(id);
-    // Bestehende Schwierigkeit laden
-    const saved = localStorage.getItem("difficulty") as Difficulty | null;
-    if (saved && DIFFICULTIES.some((d) => d.value === saved)) {
-      setDifficulty(saved);
-    }
-    setShowDifficulty(true);
-  };
-
-  const confirmDifficulty = () => {
-    localStorage.setItem("playerId", pendingId);
-    localStorage.setItem("nickname", pendingNick);
+  const startGame = () => {
     localStorage.setItem("difficulty", difficulty);
     if (!localStorage.getItem("totalXp")) localStorage.setItem("totalXp", "0");
     if (!localStorage.getItem("totalCorrect")) localStorage.setItem("totalCorrect", "0");
@@ -86,55 +49,14 @@ export default function LandingPage() {
     router.push("/play");
   };
 
-  const handleNewPlayer = async () => {
-    const trimmed = nickname.trim();
-    if (trimmed.length < 2) {
-      setError("Bitte gib einen Nickname mit mindestens 2 Zeichen ein.");
-      return;
-    }
-    if (trimmed.length > 20) {
-      setError("Nickname darf maximal 20 Zeichen lang sein.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    const playerId = crypto.randomUUID();
-
-    // Firestore: Spieler anlegen
-    try {
-      const res = await fetch("/api/players", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname: trimmed, playerId }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        // Server-seitige ID nutzen falls vorhanden
-        startGame(trimmed, data.id || playerId);
-        return;
-      }
-    } catch {
-      // Fallback: Lokal
-    }
-
-    startGame(trimmed, playerId);
-  };
-
-  const handleContinue = () => {
-    if (savedPlayer) {
-      startGame(savedPlayer.nickname, savedPlayer.playerId);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setSavedPlayer(null);
-    setShowNewPlayer(false);
-    setNickname("");
-  };
+  // Loading
+  if (authLoading || (user && loadingXp)) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-gray-500">Lade…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center py-8 sm:py-16 px-2">
@@ -161,13 +83,13 @@ export default function LandingPage() {
         </p>
       </div>
 
-      {/* Features (hide when picking difficulty) */}
+      {/* Features */}
       {!showDifficulty && (
         <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
           {[
             { icon: "🎯", title: "6 Kategorien", desc: "IHK-Lernfelder" },
-            { icon: "📚", title: "35 Fragen", desc: "3 Schwierigkeiten" },
-            { icon: "🏆", title: "8 Ränge", desc: "Vom Neuling zum Ausbilder" },
+            { icon: "📚", title: "35+ Fragen", desc: "3 Schwierigkeiten" },
+            { icon: "🏆", title: "8 Ränge", desc: "Neuling → Ausbilder" },
           ].map((f) => (
             <div key={f.title} className="card text-center py-3 px-2">
               <div className="text-xl sm:text-2xl mb-1">{f.icon}</div>
@@ -178,111 +100,70 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* ── Difficulty Picker ── */}
-      {showDifficulty ? (
-        <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
-          <div>
-            <div className="text-4xl mb-2">⚙️</div>
-            <h2 className="text-xl font-bold text-gray-100">Schwierigkeit wählen</h2>
-            <p className="text-gray-400 text-sm mt-1">
-              {pendingNick}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            {DIFFICULTIES.map((d) => (
-              <button
-                key={d.value}
-                onClick={() => setDifficulty(d.value)}
-                className={`w-full rounded-xl border-2 p-3 text-left transition-all ${
-                  difficulty === d.value
-                    ? d.color.replace("hover:", "").replace("/50", "") + " bg-white/5"
-                    : d.color + " bg-transparent"
-                } ${difficulty === d.value ? "ring-2 ring-white/10" : ""}`}
-              >
-                <div className="font-semibold text-gray-200">{d.label}</div>
-                <div className="text-xs text-gray-400">{d.desc}</div>
-              </button>
-            ))}
-          </div>
-
-          <button onClick={confirmDifficulty} className="btn-primary w-full text-lg">
-            ⚔️ Spiel starten
-          </button>
-        </div>
-      ) : (
-        <>
-          {savedPlayer && !showNewPlayer ? (
-            <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
-              <div>
-                <div className="text-5xl mb-2">👋</div>
-                <h2 className="text-xl font-bold text-gray-100">Willkommen zurück!</h2>
-                <p className="text-gray-400 mt-1">
-                  <span className="font-semibold text-[#D6462A]">{savedPlayer.nickname}</span>
-                  {" · "}
-                  <span className="text-gray-300">{savedPlayer.xp} XP</span>
-                </p>
-              </div>
-              <button onClick={handleContinue} className="btn-primary w-full text-lg">
-                ⚔️ Weiterspielen
-              </button>
-              <div className="flex gap-2 justify-center">
-                <button
-                  onClick={() => setShowNewPlayer(true)}
-                  className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                >
-                  Neuer Spieler?
-                </button>
-                <span className="text-gray-600">·</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-gray-400 hover:text-red-400 transition-colors"
-                >
-                  Abmelden
-                </button>
-              </div>
+      {/* Authenticated: Difficulty + Play */}
+      {user ? (
+        showDifficulty ? (
+          <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
+            <div>
+              <div className="text-4xl mb-2">⚙️</div>
+              <h2 className="text-xl font-bold text-gray-100">Schwierigkeit wählen</h2>
             </div>
-          ) : (
-            <div className="card w-full max-w-md animate-bounce-in">
-              {savedPlayer && (
+            <div className="space-y-2">
+              {DIFFICULTIES.map((d) => (
                 <button
-                  onClick={() => setShowNewPlayer(false)}
-                  className="mb-3 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                  key={d.value}
+                  onClick={() => setDifficulty(d.value)}
+                  className={`w-full rounded-xl border-2 p-3 text-left transition-all ${
+                    difficulty === d.value
+                      ? d.color.replace("hover:", "").replace("/50", "") + " bg-white/5 ring-2 ring-white/10"
+                      : d.color + " bg-transparent"
+                  }`}
                 >
-                  ← Zurück zu {savedPlayer.nickname}
+                  <div className="font-semibold text-gray-200">{d.label}</div>
+                  <div className="text-xs text-gray-400">{d.desc}</div>
                 </button>
-              )}
-              <label htmlFor="nickname" className="mb-2 block font-semibold text-gray-200">
-                {savedPlayer ? "Neuer Nickname" : "Dein Nickname"}
-              </label>
-              <input
-                id="nickname"
-                type="text"
-                value={nickname}
-                onChange={(e) => {
-                  setNickname(e.target.value);
-                  setError("");
-                }}
-                onKeyDown={(e) => e.key === "Enter" && handleNewPlayer()}
-                placeholder="z. B. AzubiPro99"
-                maxLength={20}
-                className="mb-3 w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-3 text-lg font-medium text-gray-100 outline-none transition-all duration-200 focus:border-[#D6462A] focus:ring-2 focus:ring-[#D6462A]/20 placeholder:text-gray-500"
-                autoFocus
-              />
-              {error && (
-                <p className="mb-3 text-sm font-medium text-red-400" role="alert">
-                  {error}
-                </p>
-              )}
-              <button onClick={handleNewPlayer} disabled={loading} className="btn-primary w-full text-lg">
-                {loading ? "Starte…" : "🚀 Los geht's!"}
-              </button>
-              <p className="mt-3 text-center text-xs text-gray-500">
-                Industriekaufmann/-frau · IHK-Prüfungsniveau
+              ))}
+            </div>
+            <button onClick={startGame} className="btn-primary w-full text-lg">
+              ⚔️ Spiel starten
+            </button>
+            <button onClick={() => setShowDifficulty(false)} className="text-sm text-gray-500 hover:text-gray-300">
+              ← Zurück
+            </button>
+          </div>
+        ) : (
+          <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
+            <div>
+              <div className="text-4xl mb-2">👋</div>
+              <h2 className="text-xl font-bold text-gray-100">
+                Bereit, {user.email?.split("@")[0]}?
+              </h2>
+              <p className="text-gray-400 text-sm mt-1">
+                Dein Fortschritt wird in deinem Account gespeichert.
               </p>
             </div>
-          )}
-        </>
+            <button onClick={() => setShowDifficulty(true)} className="btn-primary w-full text-lg">
+              🚀 Neue Runde starten
+            </button>
+          </div>
+        )
+      ) : (
+        /* Not authenticated */
+        <div className="card w-full max-w-md animate-bounce-in text-center space-y-4">
+          <div>
+            <div className="text-4xl mb-2">🔐</div>
+            <h2 className="text-xl font-bold text-gray-100">Login oder Registrieren</h2>
+            <p className="text-gray-400 text-sm mt-1">
+              Erstelle einen Account, um deinen Fortschritt zu speichern und auf dem Leaderboard zu erscheinen.
+            </p>
+          </div>
+          <a href="/login" className="btn-primary w-full text-lg inline-block">
+            🔐 Einloggen / Registrieren
+          </a>
+          <p className="text-xs text-gray-500">
+            Deine Daten werden sicher in Firebase gespeichert.
+          </p>
+        </div>
       )}
     </div>
   );
