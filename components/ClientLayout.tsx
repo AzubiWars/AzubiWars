@@ -34,8 +34,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       </main>
 
       {/* ── Footer ── */}
-      <footer className="relative z-10 border-t border-white/[0.06] py-5 text-center text-xs text-gray-600">
-        Azubi-Wars — Gamified Lernen für Azubis
+      <footer className="relative z-10 border-t border-white/[0.06] py-5 text-center text-xs text-gray-600 space-x-4">
+        <span>Azubi-Wars — Gamified Lernen für Azubis</span>
+        <a href="/impressum" className="hover:text-gray-400 transition-colors">Impressum</a>
+        <a href="/datenschutz" className="hover:text-gray-400 transition-colors">Datenschutz</a>
       </footer>
     </AuthProvider>
   );
