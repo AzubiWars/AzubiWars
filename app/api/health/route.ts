@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Nur mit Secret-Token zugänglich
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get("token");
+  if (token !== process.env.HEALTH_SECRET && process.env.HEALTH_SECRET) {
+    return NextResponse.json({ error: "Nicht authorisiert" }, { status: 401 });
+  }
+
   const checks: Record<string, string> = {};
 
   // Check env vars
