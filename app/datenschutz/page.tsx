@@ -13,6 +13,7 @@ export default function DatenschutzPage() {
         <h2 className="text-base font-semibold text-gray-200">1. Verantwortlicher</h2>
         <p>
           Moritz Knieper<br />
+          Schladerweg 24, 58809 Neuenrade<br />
           E-Mail: knieper.moritz05@gmail.com
         </p>
       </section>

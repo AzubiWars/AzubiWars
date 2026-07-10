@@ -13,9 +13,8 @@ export default function ImpressumPage() {
         <h2 className="text-base font-semibold text-gray-200">Angaben gemäß § 5 TMG</h2>
         <p>
           <strong>Moritz Knieper</strong><br />
-          c/o Azubi-Wars<br />
-          [Deine Straße & Hausnummer]<br />
-          [PLZ & Stadt]<br />
+          Schladerweg 24<br />
+          58809 Neuenrade<br />
           Deutschland
         </p>
       </section>
