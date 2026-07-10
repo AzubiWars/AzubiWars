@@ -14,7 +14,7 @@ export default function DatenschutzPage() {
         <p>
           Moritz Knieper<br />
           Schladerweg 24, 58809 Neuenrade<br />
-          E-Mail: knieper.moritz05@gmail.com
+          E-Mail: azubiwars@gmail.com
         </p>
       </section>
 
@@ -76,7 +76,7 @@ export default function DatenschutzPage() {
         <p className="text-gray-400">
           Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16 DSGVO), Löschung (Art. 17 DSGVO),
           Einschränkung der Verarbeitung (Art. 18 DSGVO) und Datenübertragbarkeit (Art. 20 DSGVO).
-          Zur Ausübung deiner Rechte schreibe an: knieper.moritz05@gmail.com
+          Zur Ausübung deiner Rechte schreibe an: azubiwars@gmail.com
         </p>
       </section>
 

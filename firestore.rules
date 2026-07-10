@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Fragen: Jeder darf lesen, nur eingeloggte User dürfen erstellen
+    match /questions/{id} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.authorId;
+    }
+
+    // Spieler: Jeder darf lesen (Rangliste), nur eigener User darf schreiben
+    match /players/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == id;
+      allow update: if request.auth != null
+        && request.auth.uid == id;
+      allow delete: if request.auth != null
+        && request.auth.uid == id;
+    }
+
+    // Health-Check (intern)
+    match /_health_check/{id} {
+      allow read, write: if true;
+    }
+  }
+}

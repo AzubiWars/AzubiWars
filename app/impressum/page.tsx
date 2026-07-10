@@ -22,14 +22,14 @@ export default function ImpressumPage() {
       <section className="space-y-2">
         <h2 className="text-base font-semibold text-gray-200">Kontakt</h2>
         <p>
-          E-Mail: <a href="mailto:knieper.moritz05@gmail.com" className="text-[#D6462A] hover:underline">knieper.moritz05@gmail.com</a>
+          E-Mail: <a href="mailto:azubiwars@gmail.com" className="text-[#D6462A] hover:underline">azubiwars@gmail.com</a>
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold text-gray-200">Haftungsausschluss</h2>
         <p className="text-gray-400">
-          Dieses Projekt entstand im Rahmen eines KI-Hackathons als Prototyp. Die Inhalte (insb. Prüfungsfragen) wurden mit KI-Unterstützung generiert und erheben keinen Anspruch auf fachliche Richtigkeit. Für die Richtigkeit der dargestellten IHK-Prüfungsinhalte wird keine Gewähr übernommen.
+          Dieses Projekt entstand im Rahmen des „Azubi Train Hackathon" als Prototyp. Die Inhalte (insb. Prüfungsfragen) wurden mit KI-Unterstützung generiert und erheben keinen Anspruch auf fachliche Richtigkeit. Für die Richtigkeit der dargestellten IHK-Prüfungsinhalte wird keine Gewähr übernommen.
         </p>
       </section>
 
